@@ -9,14 +9,14 @@
 “边缘站点”会定期清理不常用数据，释放空间给经常访问的数据。<br>
 当用户在“边缘站点”访问不到数据时，会再向“区域边缘缓存”请求数据，逐级往上。
 
-![边缘站点与区域边缘缓存的关系例图](./res/1.png)
+![边缘站点与区域边缘缓存的关系例图](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/1.png)
 
 ## 1.2 可用区（Availability Zone）命名规则
 
 1. 区域名称+数字+字母
 2. 同一个“可用区”在不同账号中，可能显示不同的名称。
 
-![边缘站点与区域边缘缓存的关系例图](./res/2.png)
+![边缘站点与区域边缘缓存的关系例图](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/2.png)
 
 # 2.核心服务
-## 2.1 IAM（）
+## 2.1 IAM（Identity and Access Management）
