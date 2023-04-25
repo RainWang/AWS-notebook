@@ -16,7 +16,15 @@
 1. 区域名称+数字+字母
 2. 同一个“可用区”在不同账号中，可能显示不同的名称。
 
-![边缘站点与区域边缘缓存的关系例图](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/2.png)
+![可用区命名规则](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/2.png)
 
 # 2.核心服务
 ## 2.1 IAM（Identity and Access Management）
+不建议用Root用户登录AWS，建议通过IAM登录AWS。
+![IAM](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/3.png)
+
+![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/4.png)
+
+[MFA下载页面](https://aws.amazon.com/cn/iam/features/mfa/)
+
+## 2.2 IAM（Identity and Access Management）
