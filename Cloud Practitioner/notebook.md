@@ -49,10 +49,11 @@
 数据库：因为是事务性操作，所以一般是读写优化的。读写相对简单，一次只是对少量数据进行操作。<br><br>
 数据仓库：因为是数据分析，需要对大量数据进行查询，所以一般仅仅是读优化的。查询相对复杂，一次要对大量数据进行操作。
 
-3. 建立OLAP应用之前，我们要想办法把各个独立系统的数据抽取出来，经过一定的转换和过滤，存放到一个集中的地方，成为数据仓库。这个抽取，转换，加载的过程叫ETL（Extract， Transform，Load）。
+3. 建立OLAP应用之前，我们要想办法把各个独立系统的数据抽取出来，经过一定的转换和过滤，存放到一个集中的地方，成为数据仓库。这个抽取，转换，加载的过程叫ETL（Extract， Transform，Load）。<br><br>
+例：<br>
+通过EC2，Lambda，Beantalk等工具将数据收集到S3，在S3通过一些数据清洗工具将结果上传至Redshift，Redshift通过报告显示给用户。<br>
+![Redshift使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/6.png)
 
-![Lambda运行机制](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/6.png)
-
-![Lambda运行机制](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/7.png)
+>Map Reduce是一种面向大数据处理的并行计算模型和方法。<br>Map和Reduce可以分别理解为数据的处理过程，Map是面对杂乱无章看上去毫不相关的数据时，从数据中提取数据的特征，经过清洗之后，在Reduce阶段就能看到已经井然有序的数据了，而后续的应用程序可以根据需求做进一步的处理以便得到需要的结果。
 
 ## 2.5 CloudWatch-监控服务
