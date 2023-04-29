@@ -93,7 +93,7 @@ ELB的类型：
 1. S3的桶（Buckets）类似文件夹，存在桶（Buckets）里的用户数据叫对象（Object），即文件。
 2. S3的桶（Buckets）只能取全球唯一的名字。
 3. S3的桶（Buckets）是在区域（Regional）里创建的。
-4. 每个对象（Object）都有个Key，对象Key是文件的完整路径，即<font color="blue">Key</font>是以下蓝字部分。
+4. 每个对象（Object）都有个Key，对象Key是文件的完整路径，即<span style="color: blue">Key</span>是以下蓝字部分。
     - s3://1006493605/<font color="blue">notebook/Cloud_Practitioner/test.png</font>
     - s3://1006493605/<font color="blue">test.png</font>
 5. S3内部没有文件夹的概念，是通过对象的Key去找到对象的。
