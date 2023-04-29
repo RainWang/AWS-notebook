@@ -32,7 +32,7 @@
 ### 2.1.1 用户（Users）&组（Groups）&角色（Roles）&策略（Policies）
 1. 不建议用Root用户登录AWS，建议通过IAM用户（Users）登录AWS。
 2. 组（Groups）只能包含用户，不能包含其它组。
-3. 角色（Roles）不能用于登录，一般被赋予某个资源，你可以在任何时候将角色赋予EC2实例，```diff + 并且不需要重启而能够马上生效。```
+3. 角色（Roles）不能用于登录，一般被赋予某个资源，你可以在任何时候将角色赋予EC2实例，**并且不需要重启而能够马上生效。**
 4. 策略（Policies）是种JSON格式文件，它可以给组，用户，角色赋予权限。
 
 策略结构：
@@ -58,18 +58,18 @@ IAM使用案例：
 
 ### 2.2.1 安全组（Security Groups）
 1. 防火墙，默认允许任何流量流出，阻止任何流量流入。
-2. ```如果访问实例收到“time out”错误，就是防火墙错误；```如果实例收到“connection refused”错误，那可能是访问服务没有开启等原因。
+2. **如果访问实例收到“time out”错误，就是防火墙错误；**如果实例收到“connection refused”错误，那可能是访问服务没有开启等原因。
 3. 安全组可以被ip或者安全组引用。
 
 ### 2.2.2 存储
 #### 2.2.2.1 EBS（Elastic Block Store）
-1. 网络驱动器，通过网络链接实例，类似U盘，```一次只能绑定一个实例，实例终止，数据依旧能保留在EBS上。```
-2. ```EBS跟可用区（AZ）绑定```，us-east-1a可用区的EBS不能链接到us-east-1b的实例，但是通过网络快照（snapshot），则可以在不同的可用区之间移动卷。
+1. 网络驱动器，通过网络链接实例，类似U盘，**一次只能绑定一个实例，实例终止，数据依旧能保留在EBS上。**
+2. **EBS跟可用区（AZ）绑定**，us-east-1a可用区的EBS不能链接到us-east-1b的实例，但是通过网络快照（snapshot），则可以在不同的可用区之间移动卷。
 3. 需要提前定义容量和IOPS。
 
 #### 2.2.2.2 EFS（Elastic File System）
 1. 这是个网络文件系统，即NFS（network file system），它可以同时链接到多个EC2实例，又称为共享网络文件系统。
-2. ```只能用于EC2，可以跨多个可用区（AZ）。```一个AZ中的实例可能与另一个AZ中的实例共享一个EFS。
+2. **只能用于EC2，可以跨多个可用区（AZ）。**一个AZ中的实例可能与另一个AZ中的实例共享一个EFS。
 3. 价格是EBS的3倍，但是不需要提前定义容量，用多少付多少。
 4. 通过启用EFS Infrequent Access（EFS-IA）策略，可以让EFS中不常访问的文件（大于60天），自动移动到EFS-IA中，EFS-IA能提供高达92%的折扣。
 
@@ -80,7 +80,7 @@ IAM使用案例：
 ### 2.2.3 负载均衡-ELB（Elastic Load Balancing）
 ELB的类型：
 1. 应用负载均衡ALB（Application Load Balancer）：Http/Https/gRPC协议，位于网络协议第七层。
-2. 网络负载均衡NLB（Network Load Balancer）：TCP/UDP协议，位于网络协议第四层。```它非常高性能，每秒能处理几百万请求。```
+2. 网络负载均衡NLB（Network Load Balancer）：TCP/UDP协议，位于网络协议第四层。**它非常高性能，每秒能处理几百万请求。**
 3. 网关负载均衡GLB（Gateway Load Balancer）：可以路由流量到防火墙，以便你执行入侵检测等操作，位于网络协议第三层。
 
 ### 2.2.4 ASG（Auto Scaling Groups）
@@ -93,9 +93,9 @@ ELB的类型：
 1. S3的桶（Buckets）类似文件夹，存在桶（Buckets）里的用户数据叫对象（Object），即文件。
 2. S3的桶（Buckets）只能取全球唯一的名字。
 3. S3的桶（Buckets）是在区域（Regional）里创建的。
-4. 每个对象（Object）都有个Key，对象Key是文件的完整路径，即```Key```是以下红字部分。
-    - s3://1006493605/```notebook/Cloud_Practitioner/test.png```
-    - s3://1006493605/```test.png```
+4. 每个对象（Object）都有个Key，对象Key是文件的完整路径，即**Key**是以下加粗部分。
+    - s3://1006493605/**notebook/Cloud_Practitioner/test.png**
+    - s3://1006493605/**test.png**
 5. S3内部没有文件夹的概念，是通过对象的Key去找到对象的。
 6. S3最大可以上传5TB（5000GB）的对象，如果上传的对象大于5GB，则要通过“multi-part”上传，即5TB对象需要分成1000份上传。
 7. 可以通过S3桶策略或者IAM策略去定义S3中对象（Object）的访问权限。
