@@ -105,7 +105,7 @@ ELB的类型：
     - Same-Region Replication（SRR）同区域拷贝
 10. S3的复制（Replication）机制是一个异步复制机制，**而且必须开启版本控制（Versioning）功能**。
 11. S3的存储类别（S3 Storage Classes），可以手动修改对象的存储类别，也可以通过设置桶的“生命周期规则”去让桶自动归类对象的存储类别：
-![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/7.png)
+![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/8.png)
 12. S3默认开启服务器端加密，即上传的对象由AWS加密，也可以修改为客户端加密，即由客户自己加密对象后上传。
 13. S3 Snow Family：
     - Snowcone：
