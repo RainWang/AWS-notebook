@@ -103,6 +103,23 @@ ELB的类型：
 9. S3的复制（Replication）机制：
     - Cross-Region Replication（CRR）跨区域拷贝
     - Same-Region Replication（SRR）同区域拷贝
+10. S3的复制（Replication）机制是一个异步复制机制，**而且必须开启版本控制（Versioning）功能**。
+11. S3的存储类别（S3 Storage Classes），可以手动修改对象的存储类别，也可以通过设置桶的“生命周期规则”去让桶自动归类对象的存储类别：
+![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/7.png)
+12. S3默认开启服务器端加密，即上传的对象由AWS加密，也可以修改为客户端加密，即由客户自己加密对象后上传。
+13. S3 Snow Family：
+    - Snowcone：
+         - Snowcone：<br>
+        提供了8TB的HDD。
+        - Snowcone SSD：<br>
+        提供了16TB的SDD。   
+    - Snowball Edage：
+        - Snowball Edge Storage Optimized：<br>
+        提供了80TB的可用数据块。
+        - Snowball Edge Compute Optimized：<br>
+        提供了42TB的可用数据块。
+    - Snowmobile：提供100PB的存储空间。
+14. 通过存储网关（Storage Gateway）可以把客户的文件系统与AWS的云桥接起来，用于混合云。
 
 ## 2.4 数据库
 ### 2.4 Redshift-数据仓库
