@@ -120,32 +120,77 @@ ELB的类型：
         提供了42TB的可用数据块。
     - Snowmobile：提供100PB的存储空间。
 14. 通过存储网关（Storage Gateway）可以把客户的文件系统与AWS的云桥接起来，用于混合云。
+15. 属于**无服务（serverless）** ，即不需要创建实例。
 
 ## 2.4 数据库
-### 2.4 Redshift-数据仓库
-1. 快速并且完全托管的云端大规模并行PB级数据仓库，可以让用户以SQL和现有的商业智能工具对PB级的结构化数据进行大规模并行查询，并且在几秒内返回结果。
+### 2.4.1 RDS-关系型数据库
+1. **不能SSH到数据库实例。**
+2. AWS自带的Aurora数据库比普通的RDS数据库效率更高，但是是收费的。
+3. 可以创建数据库只读副本（Read Replicas）去提高数据库的访问速度，最大只能创建15个，**只读副本可以跨区域创建**。
+4. 可以在其它AZ创建故障转移副本（Failover DB）去防止突发情况，只能在其它AZ中选一个AZ创建故障转移副本，故障转移副本平常不可访问，只有等主DB发生故障时才可访问。
+5. 可以使用**ElastiCache**对数据库的读取速度进行优化，ElastiCache是一种数据库缓存技术，支持Redis和Memcached。
 
-2. 数据库和数据仓库的区别：
->（1） 用途<br>
-数据库：主要用于事务处理，即OLTP（Transaction），也就是我们常用的面向业务的增删改查操作。常用的数据库有Mysql，Oracle，PostgreSQL。<br><br>
-数据仓库：主要用于数据分析，即OLAP（Analytics），供上层决策，常见于一些查询性的统计数据。常见的数仓有Greenplum，Hive。基于MYISAM存储引擎的MySQL也是可以用来做数据仓库的。<br><br>
->（2）特性<br>
-数据库：因为是事务性操作，所以一般是读写优化的。读写相对简单，一次只是对少量数据进行操作。<br><br>
-数据仓库：因为是数据分析，需要对大量数据进行查询，所以一般仅仅是读优化的。查询相对复杂，一次要对大量数据进行操作。
+### 2.4.2 NoSql-非关系型数据库
+#### 2.4.2.1 DynamoDB
+1. 一种**无服务（serverless）** 的数据库，即不需要创建实例。
+2. 每秒可以处理几百万请求，数百TB的存储，延迟非常低。
+3. DynamoDB加速器叫DAX。
+4. DynamoDB无法像RDS一样，把表与表之间联系起来。
+5. 全球表（Global Tables）服务可以使DynamoDB在跨区域使用时，延迟降低。各个区域的DynamoDB都可以读写，且区域之前互相复制。
 
-3. 建立OLAP应用之前，我们要想办法把各个独立系统的数据抽取出来，经过一定的转换和过滤，存放到一个集中的地方，成为数据仓库。这个抽取，转换，加载的过程叫ETL（Extract， Transform，Load）。<br><br>
+#### 2.4.2.2 DocumentDB
+1. 一种**无服务（serverless）** 的数据库，即不需要创建实例。
+2. 类似于MongoDB。
+
+### 2.4.3 Redshift-数据仓库
+1. 数据库主要用于事务处理，即OLTP（Transaction），数据仓库（warehousing）主要用于数据分析，即OLAP（Analytics）。
+2. 建立OLAP应用之前，我们要想办法把各个独立系统的数据抽取出来，经过一定的转换和过滤，存放到一个集中的地方，成为数据仓库。这个抽取，转换，加载的过程叫ETL（Extract， Transform，Load）。
+3. 数据清洗工具有EMR（Elastic MapReduce）和Glue等，EMR创建**Hadoop clusters**去处理大数据。<br><br>
 例：<br>
-通过EC2，Lambda，Beantalk等工具将数据收集到S3，在S3通过一些数据清洗工具将结果上传至Redshift，Redshift通过报告显示给用户。<br>
+通过EC2，Lambda，Beantalk等工具将数据收集到S3，在S3通过数据清洗工具EMR（Elastic MapReduce）,Glue等将结果上传至Redshift，Redshift通过报告显示给用户。<br>
 ![Redshift使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/6.png)
 
->Map Reduce是一种面向大数据处理的并行计算模型和方法。<br>Map和Reduce可以分别理解为数据的处理过程，Map是面对杂乱无章看上去毫不相关的数据时，从数据中提取数据的特征，经过清洗之后，在Reduce阶段就能看到已经井然有序的数据了，而后续的应用程序可以根据需求做进一步的处理以便得到需要的结果。
+### 2.4.4 Athena-S3查询工具
+1. Athena是**无服务（serverless）** 的，可以用SQL语句对存储在S3里的数据进行查询。
+2. 还可以用Athena对各种LOG进行查询。
+
+### 2.4.5 QuickSign-创建图表工具
+可以为数据库创建分析的图表。
+
+### 2.4.6 Neptune-图表数据库
+为高度链接的数据集应用服务，如SNS，wiki。
+
+### 2.4.7 QLDB-金融交易分类账
+数据不可变，多用于金融交易，非去中心化。
+
+### 2.4.8 DMS（Database Migration Service）-数据迁移服务
+用于数据库之间的数据迁移，支持不同种类数据库之间的迁移。
 
 # 3.其它计算服务
-## 3.1 ECS
-核心概念：事件驱动和函数，支持多种代码语言。
-## 3.2 Lambda-无服务计算
-核心概念：事件驱动和函数，支持多种代码语言。
-![Lambda运行机制](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/5.png)
+## 3.1 Docker运行工具
+### 3.1.1 ECS（Elastic Container Service）
+1. 弹性容器服务，用来启动Docker。
+2. **必须预先创建EC2实例。**
+
+### 3.1.2 Fargate
+1. 弹性容器服务，用来启动Docker。
+2. **不用预先创建EC2实例，属于无服务（serverless）服务。**
+
+### 3.1.3 ECR（Elastic Container Registry）
+是一个AWS上的私有Docker注册表，用来存储Docker映像，以便在ECS和Fargate上运行Docker。
+
+## 3.2 Lambda
+1. **不用预先创建EC2实例，属于无服务（serverless）服务。**
+2. **事件驱动**，事件触发后才会调用函数进行计算。
+3. 集成在所有AWS的服务中，支持多种代码语言。
+4. Lambda有时间限制，最多只能运行15分钟。
+5. Lamdba有磁盘空间限制。
+
+![Lambda运行机制](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/7.png)
+
+## 3.3 Batch
+1. Batch是个托管批处理服务，**Batch Job是一个运行在ECS上的Docker映像**，这意味着任何可以在ECS上运行的都可以在Batch上运行。
+2. 无时间空间限制。
 
 # 4.部署管理服务
 ## 4.2 CloudFormation
