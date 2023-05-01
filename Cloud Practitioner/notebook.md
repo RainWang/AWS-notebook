@@ -186,7 +186,7 @@ ELB的类型：
 4. Lambda有时间限制，最多只能运行15分钟。
 5. Lamdba有磁盘空间限制。
 
-![Lambda运行机制](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/7.png)
+![Lambda运行机制](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/9.png)
 
 ## 3.3 Batch
 1. Batch是个托管批处理服务，**Batch Job是一个运行在ECS上的Docker映像**，这意味着任何可以在ECS上运行的都可以在Batch上运行。
