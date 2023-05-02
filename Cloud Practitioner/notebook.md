@@ -53,7 +53,7 @@ IAM使用案例：
 [MFA下载页面](https://aws.amazon.com/cn/iam/features/mfa/)
 
 ## 2.2 EC2
-1. 实例重启后，公用IP会变化，私有IP不会变化。
+1. 实例重启后，公用IP会变化，弹性IP地址（Elastic IP）可以使实例重启后，公用IP不发生变化，但是需要支付一定费用，私有IP在实例重启后不会变化。
 2. 默认实例用户：ec2-user。
 
 ### 2.2.1 安全组（Security Groups）
@@ -150,7 +150,7 @@ ELB的类型：
 通过EC2，Lambda，Beantalk等工具将数据收集到S3，在S3通过数据清洗工具EMR（Elastic MapReduce）,Glue等将结果上传至Redshift，Redshift通过报告显示给用户。<br>
 ![Redshift使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/6.png)
 
-### 2.4.4 Athena-S3查询工具
+### 2.4.4 Athena-SQL查询工具
 1. Athena是**无服务（serverless）** 的，可以用SQL语句对存储在S3里的数据进行查询。
 2. 还可以用Athena对各种LOG进行查询。
 
@@ -185,6 +185,7 @@ ELB的类型：
 3. 集成在所有AWS的服务中，支持多种代码语言。
 4. Lambda有时间限制，最多只能运行15分钟。
 5. Lamdba有磁盘空间限制。
+6. **API Gateway**可以把Lambda函数以“HTTP API”的方式暴露出来。
 
 ![Lambda运行机制](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/9.png)
 
@@ -192,10 +193,57 @@ ELB的类型：
 1. Batch是个托管批处理服务，**Batch Job是一个运行在ECS上的Docker映像**，这意味着任何可以在ECS上运行的都可以在Batch上运行。
 2. 无时间空间限制。
 
-# 4.部署管理服务
-## 4.2 CloudFormation
+# 4.大规模部署和管理
+## 4.1 CloudFormation
 1. 通过模版文件自动化创建资源组件，模版文件分为Json，Yaml两种格式。
 2. 在模版文件中，“Resources”是不能缺少的。
 3. 删除堆栈时，通过模版创建的资源组件（比如EC2，安全组等）都会被删除。
+4. 通过CDK（AWS Cloud Development Kit），可以用熟悉的编程语言定义云架构模版。
 
 [CloudFormation 的官方模板下载链接](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/sample-templates-services-us-west-2.html#w2ab1c28c58c13c17)
+
+## 4.2 Beanstalk
+1. 属于PaaS，平台即服务。
+2. Beanstalk通过CloudFormation搭建环境。
+
+## 4.3 SSM（AWS Systems Manager）
+1. 属于**混合云服务（Hybrid AWS）**。
+2. **SSM Session Manager** 服务允许你在EC2或者自己主机上开启一个安全的shell，无需通过SSH访问。
+3. 实例使用时，需要给实例赋予可以访问SSM服务的角色。
+
+# 5.网络
+## 5.1 Route53-域名解析服务
+1. 主要的三个功能：域名注册，DNS路由，运行状况检查。
+2. DNS路由策略：
+    - 简单路由
+    - 地理位置路由
+    - 故障转移路由
+    - 加权路由
+    - 基于延迟的路由
+    - 多值应答路由
+3. DNS的记录类型：
+    - A记录：是用来指定主机名（或者说是域名）对应的IP地址记录，可以通过A记录来给网站的域名指向到自己的web 服务器上之后，那么访问域名的内容就会来自于自己的web服务器。
+    - CNAME：通常称为别名解析，可以将注册的不同域名都转到一个域名记录上，由这个域名记录统一解析管理，与A记录不同的是，CNAME别名记录设置的可以是一个域名。
+
+## 5.2 CloudFront-内容分发服务
+1. **可以通过Shield或者WAF（AWS Web Application Firewall）对DDoS攻击形成保护。**
+2. 内容源（Origin），CloudFront分发的内容来源：
+    - S3存储桶：可以通过OAC（Origin Access Control）去增加安全性。
+    - 自定义内容源（HTTP）：可以是EC2实例，ALB（Application Load Balancer），S3 website，或者任何HTTP。
+
+## 5.3 VPC（Virtual Private Cloud）
+### 5.3.1 子网（subnets）
+需要通过路由表（Route Tables）去链接子网和网络。
+![子网](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/10.png)
+
+# 6.消息
+## 6.1 SQS（Simple Queue Service）-简单队列服务
+消息被读取后会从队列中删除。
+
+## 6.2 SNS（Simple Notification Service）-简单提示服务
+不保留消息，一旦触发，会发送给所有订阅者。
+
+# 7.安全与监控
+## 7.1 CloudWatch
+## 7.2 CloudWatch
+## 7.3 CloudTrail
