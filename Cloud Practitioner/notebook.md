@@ -233,8 +233,41 @@ ELB的类型：
 
 ## 5.3 VPC（Virtual Private Cloud）
 ### 5.3.1 子网（subnets）
-需要通过路由表（Route Tables）去链接子网和网络。
-![子网](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/10.png)
+1. 在AZ内有多个子网，子网内部的主机可以互相联通。
+2. 公有子网可以直接访问外部网络，私有子网不能直接访问外部网络。
+3. **Internet Gateways**使VPC可以访问外网，在VPC内的公有子网可以直接连接网络，但是私有子网需要通过连接建立在公有子网内部的**NAT Gateways**去连接网络。
+4. 需要通过路由表（Route Tables）定义子网之间的访问。
+
+路由表如下所示，0.0.0.0/0代表外网。
+![路由表](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/11.png)
+
+### 5.3.2 NACL（Network ACL）
+NACL和安全组的区别：
+![NACL和安全组的区别](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/12.png)
+
+### 5.3.3 Peering
+可以建立两个VPC之间的联系，但是得确保两个VPC之间没有重复的IP，并且没有传输性，即A同时和B与C连接后，B与C之间也无法连接，必须在B与C之间用Peering再连接一次。
+
+### 5.3.4 Endpoints
+1. 可以使两个AWS服务之间通过创建私有网络进行连接，更加的安全和快速。
+2. VPC Endpoint Gateway只能连接S3和DynamoDB。
+3. VPC Endpoint Interface可以连接除了S3和DynamoDB以外的其它服务。
+4. PrivateLink服务提供AWS服务和第三方VPC之间的私有连接，更加安全和具有扩展性。
+5. **Peering是VPC级别的，Endpoints是服务应用级别的。**
+
+### 5.3.5 混合云连接服务
+#### 5.3.5.1 Site to Site VPN（Virtual Private Network）
+1. 可以把自己的数据中心VPN网络连接到AWS，加密后的信息通过共有网络进行连接，存在共有网络带宽限制和一定的安全问题。
+2. 自己的数据中心一侧必须使用一个**CGW（Customer Gateway）**，AWS一侧需要使用**VGW（Virtual Private Gateway）**。
+
+#### 5.3.5.2 Direct Connect
+在自己的数据中心和AWS之间建立一条专用的私人网络，相对安全快速。
+
+#### 5.3.5.3 ClientVPN
+在本地电脑上安装ClientVPN后，可以直接通过私有网络访问AWS的实例。
+
+### 5.3.6 Transit Gateway
+可以把多个VPC连接起来。
 
 # 6.消息
 ## 6.1 SQS（Simple Queue Service）-简单队列服务
@@ -245,5 +278,6 @@ ELB的类型：
 
 # 7.安全与监控
 ## 7.1 CloudWatch
+
 ## 7.2 CloudWatch
 ## 7.3 CloudTrail
