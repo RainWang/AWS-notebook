@@ -8,13 +8,13 @@
 
 [每个区域可使用服务查询链接](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/)
 
-## 1.2 可用区（Availability Zone）
-一个区域中，可用区通常3个（最少3个，最大6个）。<br>
+## 1.2 AZ（Availability Zone）-可用区
+一个区域（Regional）中，AZ通常3个（最少3个，最大6个）。<br>
 可用区命名规则：
 1. 区域名称+数字+字母
-2. 同一个“可用区”在不同账号中，可能显示不同的名称。
+2. 同一个AZ在不同账号中，可能显示不同的名称。
 
-![可用区命名规则](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/2.png)
+![AZ命名规则](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/2.png)
 
 ## 1.3 边缘站点（Edge Locations）和区域边缘缓存（Regional Edge Caches）
 1. “区域边缘缓存”的容量通常大于“边缘站点”。
@@ -31,7 +31,7 @@
 ## 2.1 IAM（Identity and Access Management）-Global Service
 ### 2.1.1 用户（Users）&组（Groups）&角色（Roles）&策略（Policies）
 1. 不建议用Root用户登录AWS，建议通过IAM用户（Users）登录AWS。
-2. 组（Groups）只能包含用户，不能包含其它组。
+2. **组（Groups）只能包含用户，不能包含其它组。**
 3. 角色（Roles）不能用于登录，一般被赋予某个资源，你可以在任何时候将角色赋予EC2实例，**并且不需要重启而能够马上生效。**
 4. 策略（Policies）是种JSON格式文件，它可以给组，用户，角色赋予权限。
 
@@ -46,58 +46,75 @@ IAM使用案例：
 2. AWS CLI（Access Key）
 3. AWS SDK（Access Key）
 
-### 2.1.3 安全组件
-1. 凭证报告（IAM Credentials Report）-账号级别
-2. 访问顾问（IAM Access Advisor）-用户级别
+### 2.1.3 IAM安全组件
+1. 凭证报告（IAM Credentials Report）-账号级别<br>
+生成一个报告，报告列出所有账户中用户的各种凭证的状态。
+2. 访问顾问（IAM Access Advisor）-用户级别<br>
+显示用户的服务权限，以及用户上次的访问时间。
 
-[MFA下载页面](https://aws.amazon.com/cn/iam/features/mfa/)
+### 2.1.4 MFA（Multi Factor Authentication）
+为了账号安全性，尤其是Root用户，除了用密码登录AWS账号，最好再增加MFA设备验证。<br>
+MFA验证方式：
+1. 虚拟MFA设备（Virtual MFA device）<br>
+[虚拟MFA设备下载页面](https://aws.amazon.com/cn/iam/features/mfa/)
+2. 物理设备：<br>
+    - U2F（Universal 2nd Factor）Security Key
+    - Hardware Key Fob MFA Device
+    - Haedware Key Fob MFA Device for AWS GovCloud（US）
 
 ## 2.2 EC2
-1. 实例重启后，公用IP会变化，弹性IP地址（Elastic IP）可以使实例重启后，公用IP不发生变化，但是需要支付一定费用，私有IP在实例重启后不会变化。
+1. **实例重启后，公用IP会变化。** 弹性IP地址（Elastic IP）可以使实例重启后，公用IP不发生变化，但是需要支付一定费用，私有IP在实例重启后，不会变化。
 2. 默认实例用户：ec2-user。
 
 ### 2.2.1 安全组（Security Groups）
-1. 防火墙，默认允许任何流量流出，阻止任何流量流入。
+1. 防火墙，**默认允许任何流量流出，阻止任何流量流入。**
 2. **如果访问实例收到“time out”错误，就是防火墙错误；** 如果实例收到“connection refused”错误，那可能是访问服务没有开启等原因。
-3. 安全组可以被ip或者安全组引用。
+3. 安全组可以被单个EC2实例，或者其它安全组引用。
+4. 在设置流量流入流出规则时，只有**allow**规则，没有**deny**。
+
+安全组如下所示，可以设置流量访问的端口号和IP：
+![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/13.png)
 
 ### 2.2.2 存储
 #### 2.2.2.1 EBS（Elastic Block Store）
 1. 网络驱动器，通过网络链接实例，类似U盘，**一次只能绑定一个实例，实例终止，数据依旧能保留在EBS上。**
-2. **EBS跟可用区（AZ）绑定**，us-east-1a可用区的EBS不能链接到us-east-1b的实例，但是通过网络快照（snapshot），则可以在不同的可用区之间移动卷。
-3. 需要提前定义容量和IOPS。
+2. **EBS跟可用区（AZ）绑定**，us-east-1a可用区的EBS不能链接到us-east-1b的实例，但是通过网络快照（snapshot），就可以在不同的可用区之间移动卷。
+3. 需要提前定义容量和IOPS，**后期可以扩展容量。**
 
 #### 2.2.2.2 EFS（Elastic File System）
-1. 这是个网络文件系统，即NFS（network file system），它可以同时链接到多个EC2实例，又称为共享网络文件系统。
+1. 这是个网络文件系统，即NFS（network file system），**它可以同时链接到多个EC2实例，又称为共享网络文件系统。**
 2. **只能用于EC2，可以跨多个可用区（AZ）。** 一个AZ中的实例可能与另一个AZ中的实例共享一个EFS。
-3. 价格是EBS的3倍，但是不需要提前定义容量，用多少付多少。
+3. 价格是EBS的3倍，但是**不需要提前定义容量，用多少付多少。**
 4. 通过启用EFS Infrequent Access（EFS-IA）策略，可以让EFS中不常访问的文件（大于60天），自动移动到EFS-IA中，EFS-IA能提供高达92%的折扣。
+5. **只能用于Linux实例。**
 
 #### 2.2.2.3 FSx
+用于AWS的第三方**高性能（HPC）文件系统**，可以让EC2实例和客户自己的数据中心共享文件。
 1. Amazon FSx for Windows：Windows本机文件共享系统。
-2. Amazon FSx for Lustre：Lustre是众所周知的开源的并行文件系统，主要用于高性能（HPC）的场景。
+2. Amazon FSx for Lustre：Linux的并行文件系统，主要用于高性能（HPC）的场景。
 
 ### 2.2.3 负载均衡-ELB（Elastic Load Balancing）
 ELB的类型：
 1. 应用负载均衡ALB（Application Load Balancer）：Http/Https/gRPC协议，位于网络协议第七层。
 2. 网络负载均衡NLB（Network Load Balancer）：TCP/UDP协议，位于网络协议第四层。**它非常高性能，每秒能处理几百万请求。**
-3. 网关负载均衡GLB（Gateway Load Balancer）：可以路由流量到防火墙，以便你执行入侵检测等操作，位于网络协议第三层。
+3. 网关负载均衡GLB（Gateway Load Balancer）：位于网络协议第三层。
 
 ### 2.2.4 ASG（Auto Scaling Groups）
 1. 当ASG被删除，所创建的实例也会被自动删除。
 2. ASG的收缩策略：手动策略，动态策略，预测策略。
 
-**高可用性（High Availability）** 指的是ASG把实例创建到不同AZ，ELB可以访问当前可用AZ的实例，从而在特殊情况（自然灾害等）导致某个AZ不可用时，用户访问实例依旧不受影响。
+### 2.2.5 AMI（Amazon Machine Image）
+类似与Docker的Image，通过**EC2 Image Builder**可以自动创建，维护，验证和测试AMI。
 
 ## 2.3 S3
 1. S3的桶（Buckets）类似文件夹，存在桶（Buckets）里的用户数据叫对象（Object），即文件。
-2. S3的桶（Buckets）只能取全球唯一的名字。
+2. **S3的桶（Buckets）只能取全球唯一的名字。**
 3. S3的桶（Buckets）是在区域（Regional）里创建的。
 4. 每个对象（Object）都有个Key，对象Key是文件的完整路径，即**Key**是以下加粗部分。
     - s3://1006493605/**notebook/Cloud_Practitioner/test.png**
     - s3://1006493605/**test.png**
 5. S3内部没有文件夹的概念，是通过对象的Key去找到对象的。
-6. S3最大可以上传5TB（5000GB）的对象，如果上传的对象大于5GB，则要通过“multi-part”上传，即5TB对象需要分成1000份上传。
+6. S3最大可以上传5TB（5000GB）的对象，如果上传的对象大于5TB，则要通过“multi-part”上传，即5TB对象需要分成1000份上传。
 7. 可以通过S3桶策略或者IAM策略去定义S3中对象（Object）的访问权限。
 8. S3的Versioning功能可以开启S3的版本控制功能。
 9. S3的复制（Replication）机制：
@@ -106,7 +123,7 @@ ELB的类型：
 10. S3的复制（Replication）机制是一个异步复制机制，**而且必须开启版本控制（Versioning）功能**。
 11. S3的存储类别（S3 Storage Classes），可以手动修改对象的存储类别，也可以通过设置桶的“生命周期规则”去让桶自动归类对象的存储类别：
 ![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/8.png)
-12. S3默认开启服务器端加密，即上传的对象由AWS加密，也可以修改为客户端加密，即由客户自己加密对象后上传。
+12. **S3默认开启服务器端加密**，即上传的对象由AWS加密，也可以修改为客户端加密，即由客户自己加密对象后上传。
 13. S3 Snow Family：
     - Snowcone：
          - Snowcone：<br>
@@ -119,7 +136,7 @@ ELB的类型：
         - Snowball Edge Compute Optimized：<br>
         提供了42TB的可用数据块。
     - Snowmobile：提供100PB的存储空间。
-14. 通过存储网关（Storage Gateway）可以把客户的文件系统与AWS的云桥接起来，用于混合云。
+14. 通过**存储网关（Storage Gateway）** 可以把客户的文件系统与AWS的云桥接起来，用于混合云。
 15. 属于**无服务（serverless）** ，即不需要创建实例。
 
 ## 2.4 数据库
@@ -134,13 +151,13 @@ ELB的类型：
 #### 2.4.2.1 DynamoDB
 1. 一种**无服务（serverless）** 的数据库，即不需要创建实例。
 2. 每秒可以处理几百万请求，数百TB的存储，延迟非常低。
-3. DynamoDB加速器叫DAX。
+3. **DynamoDB加速器叫DAX。**
 4. DynamoDB无法像RDS一样，把表与表之间联系起来。
-5. 全球表（Global Tables）服务可以使DynamoDB在跨区域使用时，延迟降低。各个区域的DynamoDB都可以读写，且区域之前互相复制。
+5. **全球表（Global Tables）** 服务可以使DynamoDB在跨区域使用时，延迟降低。各个区域的DynamoDB都可以读写，且区域之前互相复制。
 
 #### 2.4.2.2 DocumentDB
 1. 一种**无服务（serverless）** 的数据库，即不需要创建实例。
-2. 类似于MongoDB。
+2. 类似于**MongoDB**。
 
 ### 2.4.3 Redshift-数据仓库
 1. 数据库主要用于事务处理，即OLTP（Transaction），数据仓库（warehousing）主要用于数据分析，即OLAP（Analytics）。
@@ -154,7 +171,7 @@ ELB的类型：
 1. Athena是**无服务（serverless）** 的，可以用SQL语句对存储在S3里的数据进行查询。
 2. 还可以用Athena对各种LOG进行查询。
 
-### 2.4.5 QuickSign-创建图表工具
+### 2.4.5 QuickSight-创建图表工具
 可以为数据库创建分析的图表。
 
 ### 2.4.6 Neptune-图表数据库
@@ -163,7 +180,10 @@ ELB的类型：
 ### 2.4.7 QLDB-金融交易分类账
 数据不可变，多用于金融交易，非去中心化。
 
-### 2.4.8 DMS（Database Migration Service）-数据迁移服务
+### 2.4.8 Amazon Managed Blockchain-区块链
+去中心化的**区块链技术。**
+
+### 2.4.9 DMS（Database Migration Service）-数据迁移服务
 用于数据库之间的数据迁移，支持不同种类数据库之间的迁移。
 
 # 3.其它计算服务
@@ -183,22 +203,27 @@ ELB的类型：
 1. **不用预先创建EC2实例，属于无服务（serverless）服务。**
 2. **事件驱动**，事件触发后才会调用函数进行计算。
 3. 集成在所有AWS的服务中，支持多种代码语言。
-4. Lambda有时间限制，最多只能运行15分钟。
+4. Lambda有时间限制，**最多只能运行15分钟。**
 5. Lamdba有磁盘空间限制。
-6. **API Gateway**可以把Lambda函数以“HTTP API”的方式暴露出来。
 
 ![Lambda运行机制](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/9.png)
 
-## 3.3 Batch
+## 3.3 API Gateway
+无服务创建API的服务，例：客户通常无法直接访问Lambda函数，需要通过API Gateway把Lambda函数以“REST HTTP API”的方式暴露给用户。
+
+## 3.4 Batch
 1. Batch是个托管批处理服务，**Batch Job是一个运行在ECS上的Docker映像**，这意味着任何可以在ECS上运行的都可以在Batch上运行。
 2. 无时间空间限制。
+
+## 3.5 Lightsail
+新手入门工具，帮助新手快速创建一个实例。
 
 # 4.大规模部署和管理
 ## 4.1 CloudFormation
 1. 通过模版文件自动化创建资源组件，模版文件分为Json，Yaml两种格式。
 2. 在模版文件中，“Resources”是不能缺少的。
 3. 删除堆栈时，通过模版创建的资源组件（比如EC2，安全组等）都会被删除。
-4. 通过CDK（AWS Cloud Development Kit），可以用熟悉的编程语言定义云架构模版。
+4. 通过**CDK（AWS Cloud Development Kit）**，可以用熟悉的编程语言定义云架构模版。
 
 [CloudFormation 的官方模板下载链接](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/sample-templates-services-us-west-2.html#w2ab1c28c58c13c17)
 
@@ -327,53 +352,141 @@ NACL和安全组的区别：
 作为一个咨询服务，可以让客户按需访问合规性报告和AWS协议。
 
 ### 7.2.6 GuardDuty
-通过机器学习，异常检测和第三方数据去发现威胁，**可以使你免受加密货币的攻击**。
+通过机器学习，异常检测和第三方数据（日志分析）去发现威胁，**可以使你免受加密货币的攻击**。
 
 ### 7.2.7 Inspector
 对EC2实例和ECR容器映像和Lambda函数做一个扫描，找出漏洞，按等级列出风险评估列表。
 
-## 7.3 高级认证
+### 7.2.8 Config
+Config负责跟踪所有创建、删除或管理的资源，通过记录配置及其随时间的变化来帮助审核和记录资源的合规性。
 
+### 7.2.9 Macie
+一项管理数据安全和数据隐私的服务，可以帮你把存储在S3的数据归类为哪些是个人身份信息，即PII（personally identifiable information）。
+
+### 7.2.10 Security Hub
+这是一种让你拥有中央安全工具来管理不同AWS账号（Multi Account）之间的安全性并自动执行安全检查的方法。<br>
+多重安全检查的工具，将跨多个账号，把所有这些警报发送到一个称为安全中心的位置。
+
+### 7.2.11 Detective
+Detective可以帮助你找到安全警报发生的根本原因。
+
+### 7.2.12 Abuse
+如果你发现AWS的某些资源或者IP存在滥用或者违法的行为，可以举报至这个abuse@amazonaws邮箱。
+
+### 7.2.13 Root用户特权
+根用户可以访问所有的AWS服务和资源，以下是只有根用户才有的特权（只是列出了可能会考试的一部分，没有完全列出）：
+1. 改变账号设置（账号的名字邮箱密码和用户access key）
+2. 关闭AWS账号
+3. 改变或者取消AWS Support Plan。
+4. 在Reserved Instance Marketplace注册为一个卖方。
+
+### 7.2.14 IAM Access Analyzer
+对AWS资源IAM访问权限的分析，需要定义一个信任域（Zone of Trust），信任区域之外的任何访问都将作为调查结果报告。
+
+### 7.2.14 Trusted Advisor 
+通过优化AWS环境降低成本，提高性能并提高安全性的在线工具。<br>
+提供实时指导，帮助按照AWS最佳实践配置资源。
+
+## 7.3 身份认证
+### 7.3.1 AWS STS（Security Token Service）-安全令牌服务
+它可以让你创建临时有限的权限去访问你的AWS资源。
+
+### 7.3.2 Cognito
+为AWS以外的外部用户提供身份验证，比如Web和移动应用程序的用户，也可以与谷歌，facebook等账号连用。
+
+### 7.3.3 Directory Services
+Directory Services是Microsoft Active Directory（AD）集成到AWS的服务。
+
+### 7.3.4 IAM Identity Center
+账户中心，登录后，可以访问所有账户的控制台。
 
 # 8.账单和支持
+## 8.1 组织（Organizations）
+1. 一个全球服务，其理念是通过创建一个组织，你可以管理多个AWS账户，通过共同支付降低成本。
+2. 可以使用SCP（Service Control Policies）限制账户权限，SCP对主账号（Master Account）没有影响，被限制的AWS账号，即使用户是Root用户，也会被限制权限。
+3. 可以按业务单位OU（Organizational Units）组织账号，类似用户组管理用户，一个OU可能被包含在其它OU中，并且一个账号可以属于多个OU。
 
-# 9.完善的构架
-## 9.1 Well-Architected Framework
+## 8.2 Control Tower
+通过最佳实践，帮助用户设置和管理安全，合规，多账户的AWS环境。Control Tower位于组织（Organizations）的顶层，它将自动为您设置组织以组织您的账户。
+
+## 8.2 Control Tower
+
+
+# 9.构架和生态
+## 9.1 完善的构架（Well-Architected Framework）
 一个用于设计基础设施的指南，一种评估和实施架构的系统的方法，从众多经验教训中建立起来的最佳实践。
 
 框架的支柱：
-1. 卓越运营（）
+1. 卓越运营（Operational Excellence）
     - 利用代码执行操作
     - 注释文档
     - 定期进行一些增量的微小变更
     - 经常优化程序
     - 预见故障
     - 从操作事件及故障中总结经验
-2. 安全性
+2. 安全性（Security）
     - 身份验证机制
     - 启用追踪性
     - 在所有层应用安全性
     - 自动实施安全性最佳实践
     - 保护传输中的数据和静态数据
     - 做好安全性事件应对准备
-3. 可靠性
+3. 可靠性（Reliability）
     - 测试恢复流程
     - 自动故障恢复
     - 横向扩展提升总体系统可用性
     - 无需猜测容量
     - 自动管理变更
-4. 性能效率
+4. 性能效率（Performance Efficiency）
     - 普及先进技术
     - 数分钟内实现全球化部署
     - 使用无服务架构
     - 更频繁进行试验
     - 制度化选择
-5. 成本优化
+5. 成本优化（Cost Optimization）
     - 采用消费模型
     - 衡量总体效率
     - 无需再为数据中心运营投入资金
     - 分析支出和确定支出属性
     - 使用托管服务降低拥有成本
+6. 可持续性（Sustainability）
+    - 了解你的影响
+    - 达到可持续目标
+    - 最大限度利用你的服务
+    - 预测并采用新的，更高效的硬件和软件
+    - 使用AMS（AWS Managed Service）
+    - 减少云工作的下游负载
+
+## 9.2 生态（Ecosystem）
 
 # 10.其它服务
 ## 10.1 机器学习
+### 10.1.1 Rekognition
+物体识别，人脸识别，文本检测，Pathing（例如运动中的路径选择）。
+
+### 10.1.2 Transcribe
+将语言转成文本。
+
+### 10.1.3 Polly
+将文本转成语言。
+
+### 10.1.4 Translate
+翻译。
+
+### 10.1.5 Comprehend
+一种自然语言处理，用于文字分析，提取文字中的情绪主题等。
+
+### 10.1.6 SageMaker
+创建机器学习模型。
+
+### 10.1.7 Forecast
+把数据上传到S3，Forecast会利用数据预测结果。
+
+### 10.1.8 Kendra
+文档搜索服务。
+
+### 10.1.9 Personalize
+提供个性化推荐。
+
+### 10.1.10 Textract
+用于提取文本，扫描文本证件等，提取信息。
