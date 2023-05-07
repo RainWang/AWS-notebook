@@ -231,10 +231,36 @@ ELB的类型：
 1. 属于PaaS，平台即服务。
 2. Beanstalk通过CloudFormation搭建环境。
 
-## 4.3 SSM（AWS Systems Manager）
+## 4.3 Code代码构建服务
+### 4.3.1 CodeCommit
+类似github，代码管理仓库。
+
+### 4.3.2 CodeBuild
+自动构建代码。
+
+### 4.3.3 CodeDeploy
+自动部署应用程序。
+
+### 4.3.4 CodePipeline
+持续集成和持续部署CI/CD（Continuous Intergration & Continuous Delivery）工具。
+
+### 4.3.5 CodeArtifact
+一项完全托管式工件存储库服务，可让您轻松安全地存储、发布和共享软件开发过程中使用的软件包。
+
+### 4.3.6 CodeStar
+一个UI系统，展示构建的各种可视化数据。
+
+### 4.3.7 Cloud9
+在云中的代码编辑编译IDE系统。
+
+## 4.4 SSM（AWS Systems Manager）
 1. 属于**混合云服务（Hybrid AWS）**。
 2. **SSM Session Manager** 服务允许你在EC2或者自己主机上开启一个安全的shell，无需通过SSH访问。
 3. 实例使用时，需要给实例赋予可以访问SSM服务的角色。
+4. 默认的AWS AMI中，安装了SSM，但是在客户自己的机器上，需要安装SSM agent才能使用。
+
+## 4.5 OpsWorks
+即**CHEF&puppet**，是两个可以帮助你自动执行服务器配置，或者重复执行操作的软件，SSM的替代选项。
 
 # 5.网络
 ## 5.1 Route53-域名解析服务
@@ -251,10 +277,11 @@ ELB的类型：
     - CNAME：通常称为别名解析，可以将注册的不同域名都转到一个域名记录上，由这个域名记录统一解析管理，与A记录不同的是，CNAME别名记录设置的可以是一个域名。
 
 ## 5.2 CloudFront-内容分发服务
-1. **可以通过Shield或者WAF（AWS Web Application Firewall）对DDoS攻击形成保护。**
+1. CDN加速，原理就是在全球建立CDN服务器，即边缘站点（Edge Locations）和区域边缘缓存（Regional Edge Caches），依靠缓存加速网页访问速度。
 2. 内容源（Origin），CloudFront分发的内容来源：
     - S3存储桶：可以通过OAC（Origin Access Control）去增加安全性。
     - 自定义内容源（HTTP）：可以是EC2实例，ALB（Application Load Balancer），S3 website，或者任何HTTP。
+3. **集成了Shield，防止DDos攻击。**
 
 ## 5.3 VPC（Virtual Private Cloud）
 ### 5.3.1 子网（subnets）
@@ -271,7 +298,8 @@ NACL和安全组的区别：
 ![NACL和安全组的区别](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/12.png)
 
 ### 5.3.3 Peering
-可以建立两个VPC之间的联系，但是得确保两个VPC之间没有重复的IP，并且没有传输性，即A同时和B与C连接后，B与C之间也无法连接，必须在B与C之间用Peering再连接一次。
+可以建立两个VPC之间的联系，**但是得确保两个VPC之间没有重复的IP。**<br>
+**没有传输性**，即A同时和B与C连接后，B与C之间也无法连接，必须在B与C之间用Peering再连接一次。
 
 ### 5.3.4 Endpoints
 1. 可以使两个AWS服务之间通过创建私有网络进行连接，更加的安全和快速。
@@ -289,17 +317,43 @@ NACL和安全组的区别：
 在自己的数据中心和AWS之间建立一条专用的私人网络，相对安全快速。
 
 #### 5.3.5.3 ClientVPN
-在本地电脑上安装ClientVPN后，可以直接通过私有网络访问AWS的实例。
+基于客户端的VPN服务，在本地电脑上安装ClientVPN后，可以直接通过私有IP访问AWS的实例。
 
 ### 5.3.6 Transit Gateway
 可以把多个VPC连接起来。
 
+## 5.4 网络加速器
+### 5.4.1 S3 Transfer Acceleration
+可以加速S3的传输速度，原理是用户上传文件到最近的边缘位置，边缘位置直接通过专门的网络传输到S3。
+
+### 5.4.2 AWS Global Accelerator
+可以加速网络传输速度，原理和S3 Transfer Acceleration一样，直接在边缘位置和AWS服务直接有一条专门的网络，可以省去路由的时间。<br>
+与CloudFront的区别就是CloudFront主要是利用缓存，AWS Global Accelerator不会缓存数据。<br>
+ **集成了Shield，防止DDos攻击。**
+
+## 5.5 Outposts
+Outposts是部署在客户机房的一体化机柜，在逻辑上作为AWS Region的延展。<br>
+本身具有低延迟，数据可以存在本地，机器由AWS维护等优势。
+
+## 5.6 WaveLength
+5G网络。
+
+## 5.7 Local Zones
+是将服务器部署在靠近客户的数据中心，在逻辑上作为AWS Region的延展。<br>
+例：A区域中没有某个AZ，客户希望把服务放置在这个AZ，则需要把这个AZ设置为Local Zones，加入到A区域中。
+
 # 6.消息
 ## 6.1 SQS（Simple Queue Service）-简单队列服务
-消息被读取后会从队列中删除。
+消息被读取后会从队列中删除，消息不会被推送到接收者，接收方必须轮询或从SQS提取消息，并且消息不能同时被多个接收者接收。
 
 ## 6.2 SNS（Simple Notification Service）-简单提示服务
 不保留消息，一旦触发，会发送给所有订阅者。
+
+## 6.3 Kinesis
+Amazon Kinesis可以让你轻松收集、处理和分析**实时流数据**。利用Amazon Kinesis，你可以在收到数据的同时对数据进行处理和分析，无需等到数据全部收集完成才进行处理。
+
+## 6.4 MQ
+是一种托管消息代理服务，适用于RabbitMQ和ActiveMQ这两种技术，扩展性没有SQS/SNS好。
 
 # 7.安全与监控
 ## 7.1 监控服务
