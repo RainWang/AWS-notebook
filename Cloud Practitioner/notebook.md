@@ -626,3 +626,44 @@ AWS Solutions：https://aws.amazon.com/solutions<br>
 Lex类似于Alexa，像小米机器人那种，可以智能聊天，Connect可以创建智能客服中心。
 
 ## 10.2 WorkSpaces
+DaaS（Desktop as a Service）服务，让你可以轻松的调用Linux或者Windows桌面。<br>
+它将是一个允许你消除所谓内部**虚拟桌面VDI（Virtual Desktop Infrastructure）** 的解决方案。
+
+## 10.3 Amazon AppStream 2.0
+可以把应用通过浏览器展示。
+
+## 10.4 AWS IoT Core
+物联网，可以把IoT设备轻松的连接到AWS云中。
+
+## 10.5 Amazon Elastic Transcoder
+把存放在S3中的视频等流媒体文件进行转码，转成合适播放的格式。
+
+## 10.6 AppSync
+实时的同步数据，利用了facebook的**GraphQL**技术
+
+## 10.7 Amplify
+帮助你开发部署web和手机应用，目标是构建移动程序后端。
+
+## 10.7 Device Farm
+可以在Device Farm上测试不同的设备。
+
+## 10.8 Backup
+备份服务，通过制定备份计划，可以把数据备份到S3上。
+
+## 10.9 Disaster Recovery Strategies
+备份服务，通过制定备份计划，可以把数据备份到S3上。
+
+## 10.10 DataSync
+把大量数据同步到S3，EFS，FSx for Windows上。
+
+## 10.11 AWS Fault Injection Simulator（FIS）
+错误注入模拟器，基于**Chaos Engineering**，通过对基础设施的破坏，确保应用程序是真正可靠的。
+
+## 10.12 AWS Step Funtions
+可视化构建工作流。
+
+## 10.13 Ground Station
+控制卫星通信，处理数据和扩展卫星操作。
+
+## 10.14 Pinpoint
+消息推送，营销传播服务。
