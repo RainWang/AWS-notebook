@@ -51,6 +51,8 @@ IAM使用案例：
 生成一个报告，报告列出所有账户中用户的各种凭证的状态。
 2. 访问顾问（IAM Access Advisor）-用户级别<br>
 显示用户的服务权限，以及用户上次的访问时间。
+3. 访问分析器（IAM Access Analyzer）<br>
+对AWS资源IAM访问权限的分析，需要定义一个信任域（Zone of Trust），信任区域之外的任何访问都将作为调查结果报告。
 
 ### 2.1.4 MFA（Multi Factor Authentication）
 为了账号安全性，尤其是Root用户，除了用密码登录AWS账号，最好再增加MFA设备验证。<br>
@@ -415,10 +417,10 @@ Amazon Kinesis可以让你轻松收集、处理和分析**实时流数据**。�
 Config负责跟踪所有创建、删除或管理的资源，通过记录配置及其随时间的变化来帮助审核和记录资源的合规性。
 
 ### 7.2.9 Macie
-一项管理数据安全和数据隐私的服务，可以帮你把存储在S3的数据归类为哪些是个人身份信息，即PII（personally identifiable information）。
+一项管理数据安全和数据隐私的服务，可以帮你把存储在S3的数据归类为哪些是个人身份信息，即**PII（personally identifiable information）**。
 
 ### 7.2.10 Security Hub
-这是一种让你拥有中央安全工具来管理不同AWS账号（Multi Account）之间的安全性并自动执行安全检查的方法。<br>
+这是一种让你拥有中央安全工具来**管理不同AWS账号（Multi Account）** 之间的安全性并自动执行安全检查的方法。<br>
 多重安全检查的工具，将跨多个账号，把所有这些警报发送到一个称为安全中心的位置。
 
 ### 7.2.11 Detective
@@ -434,13 +436,6 @@ Detective可以帮助你找到安全警报发生的根本原因。
 3. 改变或者取消AWS Support Plan。
 4. 在Reserved Instance Marketplace注册为一个卖方。
 
-### 7.2.14 IAM Access Analyzer
-对AWS资源IAM访问权限的分析，需要定义一个信任域（Zone of Trust），信任区域之外的任何访问都将作为调查结果报告。
-
-### 7.2.14 Trusted Advisor 
-通过优化AWS环境降低成本，提高性能并提高安全性的在线工具。<br>
-提供实时指导，帮助按照AWS最佳实践配置资源。
-
 ## 7.3 身份认证
 ### 7.3.1 AWS STS（Security Token Service）-安全令牌服务
 它可以让你创建临时有限的权限去访问你的AWS资源。
@@ -452,19 +447,96 @@ Detective可以帮助你找到安全警报发生的根本原因。
 Directory Services是Microsoft Active Directory（AD）集成到AWS的服务。
 
 ### 7.3.4 IAM Identity Center
-账户中心，登录后，可以访问所有账户的控制台。
+账户中心，登录后，可以访问所有账户的控制台，管理多个AWS账户和云应用程序的访问。
 
 # 8.账单和支持
-## 8.1 组织（Organizations）
-1. 一个全球服务，其理念是通过创建一个组织，你可以管理多个AWS账户，通过共同支付降低成本。
+## 8.1 定价基础知识
+### 8.1.1 定价模式
+1. 按需付费（Pay as you go）
+2. 预留容量，付费更少
+3. 用量越大，费用越少
+4. AWS规模越大，价格越低
+
+### 8.1.2 免费服务
+1. VPC
+2. Elastic Beanstalk
+3. CloudFormation
+4. IAM
+5. Auto Scaling
+6. Consolidated Biling
+7. 新手免费套餐
+
+## 8.2 成本计算器
+### 8.2.1 估算成本
+**Pricing Calculator**根据选定的服务估算价格。
+
+### 8.2.2 追踪成本
+#### 8.2.2.1 Billing Dashboard
+计费仪表板，会显示当月的所有成本。
+
+#### 8.2.2.2 Cost Allocation Tags
+成本分配标签，它允许我们跟踪我的成本在一个详细的等级或者组（Resource Group）中。
+
+#### 8.2.2.3 Cost and Usage Reports
+可以生成每月甚至每小时的成本和用户报告，**可以获得最全面，最细粒度的报告**，以深入了解你的成本和使用情况。
+
+#### 8.2.2.4 Cost Explorer
+1. 成本浏览器，我们可以可视化的理解和管理成本。<br>
+2. 可以获得每月甚至每小时的成本数据。<br>
+3. 可以选择一个最优的**Saving Plan**去降低成本。<br>
+4. **可以预测长达12个月的使用成本。**
+
+### 8.2.3 监控成本
+#### 8.2.3.1 Billing Alarms
+可以在Billing Alarms设置账单阀值，如果超过阀值，就会收到通知。
+
+#### 8.2.3.2 Budgets
+创建预算，当超过预算，就会发出警报。
+
+#### 8.2.3.3 Cost Anomaly Detection
+持续监控成本，利用机器学习，通过对历史数据的分析，去预测未来成本，在超出阀值时发出警报。
+
+## 8.3 组织和合并支付
+### 8.3.1 组织（Organizations）
+1. 一个全球服务，其理念是通过创建一个组织，你可以管理多个AWS账户，通过共同支付，共享资源等降低成本。
 2. 可以使用SCP（Service Control Policies）限制账户权限，SCP对主账号（Master Account）没有影响，被限制的AWS账号，即使用户是Root用户，也会被限制权限。
 3. 可以按业务单位OU（Organizational Units）组织账号，类似用户组管理用户，一个OU可能被包含在其它OU中，并且一个账号可以属于多个OU。
 
-## 8.2 Control Tower
+### 8.3.2 Control Tower
 通过最佳实践，帮助用户设置和管理安全，合规，多账户的AWS环境。Control Tower位于组织（Organizations）的顶层，它将自动为您设置组织以组织您的账户。
 
-## 8.2 Control Tower
+### 8.3.3 Service Catalog
+在很多组织中，研发部门可能都要启动一些AWS资源来进行内部测试。如果不同的研发人员都去启动EC2实例，然后选择AMI，选择实例类型等等，那么最终的资源的规格肯定是五花八门。
+<br><br>
+这样对于组织后续的管理将会带来很大的麻烦，无法进行一致性的监管，也无法满足合规性要求，甚至可能会自行选择一些配置比较高而用不到或需要使用付费的实例用于测试，这样还会导致成本浪费。<br><br>
+所以Service Catalog服务，就可以解决这些问题。通过**预先定义好允许启动的资源，做好相应的配置，放到一个集中的地方提供给研发进行快速启动和使用。** 这样的话，研发同学只要页面点击几次就可以进行部署，而且也可以遵循组织的一致性标准。
 
+## 8.4 支持计划（Support Plan）
+支持计划类型：
+1. 基础支持计划
+2. 开发人员支持计划
+3. 商业支持计划
+4. 企业支持计划
+
+[AWS不同的支持计划对比](https://us-east-1.console.aws.amazon.com/support/plans/home?region=us-east-1#/?refid=how-to-take-advantage-of-the-aws-free-tier_cfm-blog_link)
+
+[AWS Acceptable Use Policy 链接](https://aws.amazon.com/cn/aup/)
+
+## 8.5 其它服务
+### 8.5.1 Trusted Advisor 
+通过优化AWS环境降低成本，提高性能并提高安全性的在线工具。<br>
+提供实时指导，帮助按照AWS最佳实践配置资源。
+
+### 8.5.2 Compute Optimizer
+通过优化AWS资源去提高性能和减少开支。<br>
+支持的资源有：
+1. EC2
+2. ASG
+3. EBS
+4. Lamdba
+
+### 8.5.3 AWS Service Quotas
+通过设置服务的限额去管理服务的额度，超过限额会发送通知到CloudWatch。
 
 # 9.构架和生态
 ## 9.1 完善的构架（Well-Architected Framework）
@@ -512,6 +584,11 @@ Directory Services是Microsoft Active Directory（AD）集成到AWS的服务。
     - 减少云工作的下游负载
 
 ## 9.2 生态（Ecosystem）
+AWS Blogs：https://aws.amazon.com/blogs/aws<br>
+AWS Forums（community）：https://forums.amazon.com/index.jspa<br>
+AWS Whitepapers & Guides：https://aws.amazon.com/whitepapers<br>
+AWS Quick Starts：https://aws.amazon.com/quickstart<br>
+AWS Solutions：https://aws.amazon.com/solutions<br>
 
 # 10.其它服务
 ## 10.1 机器学习
@@ -544,3 +621,8 @@ Directory Services是Microsoft Active Directory（AD）集成到AWS的服务。
 
 ### 10.1.10 Textract
 用于提取文本，扫描文本证件等，提取信息。
+
+### 10.1.11 Lex & Connect
+Lex类似于Alexa，像小米机器人那种，可以智能聊天，Connect可以创建智能客服中心。
+
+## 10.2 WorkSpaces
