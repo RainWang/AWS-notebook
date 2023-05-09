@@ -100,6 +100,7 @@
         - [7.2.11. Detective](#7211-detective)
         - [7.2.12. Abuse](#7212-abuse)
         - [7.2.13. Root用户特权](#7213-root用户特权)
+        - [7.2.14. 访问分析器（IAM Access Analyzer）](#7214-访问分析器iam-access-analyzer)
     - [7.3. 身份认证](#73-身份认证)
         - [7.3.1. AWS STS（Security Token Service）-安全令牌服务](#731-aws-stssecurity-token-service-安全令牌服务)
         - [7.3.2. Cognito](#732-cognito)
@@ -214,8 +215,6 @@ IAM使用案例：
 生成一个报告，报告列出所有账户中用户的各种凭证的状态。
 2. 访问顾问（IAM Access Advisor）-用户级别<br>
 显示用户的服务权限，以及用户上次的访问时间。
-3. 访问分析器（IAM Access Analyzer）<br>
-对AWS资源IAM访问权限的分析，需要定义一个信任域（Zone of Trust），信任区域之外的任何访问都将作为调查结果报告。
 
 ### 2.1.4. MFA（Multi Factor Authentication）
 为了账号安全性，尤其是Root用户，除了用密码登录AWS账号，最好再增加MFA设备验证。<br>
@@ -598,6 +597,9 @@ Detective可以帮助你找到安全警报发生的根本原因。
 2. 关闭AWS账号
 3. 改变或者取消AWS Support Plan。
 4. 在Reserved Instance Marketplace注册为一个卖方。
+
+### 7.2.14. 访问分析器（IAM Access Analyzer）
+对AWS资源IAM访问权限的分析，需要定义一个信任域（Zone of Trust），信任区域之外的任何访问都将作为调查结果报告。
 
 ## 7.3. 身份认证
 ### 7.3.1. AWS STS（Security Token Service）-安全令牌服务
