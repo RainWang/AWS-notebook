@@ -253,7 +253,7 @@ MFA验证方式：
 5. **只能用于Linux实例。**
 
 #### 2.2.2.3. FSx
-用于AWS的第三方**高性能（HPC）文件系统**，可以让EC2实例和客户自己的数据中心共享文件。
+**可用于混合云**，用于AWS的第三方**高性能（HPC）文件系统**，可以让EC2实例和**客户自己的数据中心**共享文件。
 1. Amazon FSx for Windows：Windows本机文件共享系统。
 2. Amazon FSx for Lustre：Linux的并行文件系统，主要用于高性能（HPC）的场景。
 
