@@ -279,13 +279,13 @@ ELB的类型：
     - s3://1006493605/**test.png**
 5. S3内部没有文件夹的概念，是通过对象的Key去找到对象的。
 6. S3最大可以上传5TB（5000GB）的对象，如果上传的对象大于5TB，则要通过“multi-part”上传，即5TB对象需要分成1000份上传。
-7. 可以通过S3桶策略或者IAM策略去定义S3中对象（Object）的访问权限。
-8. S3的Versioning功能可以开启S3的版本控制功能。
-9. S3的复制（Replication）机制：
+7. 可以通过S3**桶策略（Bucket Policies）** 或者IAM策略去定义S3中对象（Object）的访问权限。
+8. S3的**Versioning**功能可以开启S3的版本控制功能。
+9. S3的**复制（Replication）** 机制：
     - Cross-Region Replication（CRR）跨区域拷贝
     - Same-Region Replication（SRR）同区域拷贝
 10. S3的复制（Replication）机制是一个异步复制机制，**而且必须开启版本控制（Versioning）功能**。
-11. S3的存储类别（S3 Storage Classes），可以手动修改对象的存储类别，也可以通过设置桶的“生命周期规则”去让桶自动归类对象的存储类别：
+11. S3的存储类别（S3 Storage Classes），可以手动修改对象的存储类别，也可以通过设置桶的 **“生命周期规则”（lifecycle rule）** 去让桶自动归类对象的存储类别：
 ![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/8.png)
 12. **S3默认开启服务器端加密**，即上传的对象由AWS加密，也可以修改为客户端加密，即由客户自己加密对象后上传。
 13. S3 Snow Family：
@@ -816,7 +816,7 @@ DaaS（Desktop as a Service）服务，让你可以轻松的调用Linux或者Win
 备份服务，通过制定备份计划，可以把数据备份到S3上。
 
 ## 10.10. Disaster Recovery Strategies
-备份服务，通过制定备份计划，可以把数据备份到S3上。
+灾难恢复服务。
 
 ## 10.11. DataSync
 把大量数据同步到S3，EFS，FSx for Windows上。
