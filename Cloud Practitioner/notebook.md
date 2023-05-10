@@ -462,11 +462,11 @@ NACL和安全组的区别：
 ![NACL和安全组的区别](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/12.png)
 
 ### 5.3.3. Peering
-可以建立两个VPC之间的联系，**但是得确保两个VPC之间没有重复的IP。**<br>
+可以建立两个VPC之间的**私有连接**，**但是得确保两个VPC之间没有重复的IP。**<br>
 **没有传输性**，即A同时和B与C连接后，B与C之间也无法连接，必须在B与C之间用Peering再连接一次。
 
 ### 5.3.4. Endpoints
-1. 可以使两个AWS服务之间通过创建私有网络进行连接，更加的安全和快速。
+1. 可以使两个AWS服务之间通过创建**私有网络**进行连接，更加的安全和快速。
 2. VPC Endpoint Gateway只能连接S3和DynamoDB。
 3. VPC Endpoint Interface可以连接除了S3和DynamoDB以外的其它服务。
 4. PrivateLink服务提供AWS服务和第三方VPC之间的私有连接，更加安全和具有扩展性。
