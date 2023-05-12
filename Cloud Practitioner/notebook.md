@@ -334,8 +334,9 @@ ELB的类型：
 ![Redshift使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/6.png)
 
 ### 2.4.4. Athena-SQL查询工具
-1. Athena是**无服务（serverless）** 的，可以用SQL语句对存储在S3里的数据进行查询。
-2. 还可以用Athena对各种LOG进行查询。
+1. Athena是**无服务（serverless）** 的，可以用SQL语句对存储在**S3**里的数据进行查询。
+2. 支持CVS，JSON，ORC，Avro和Parquet，在Presto之上构建。（Presto是一款内存计算型引擎）
+3. 常用于存储在S3中的LOG的查询和分析。
 
 ### 2.4.5. QuickSight-创建图表工具
 可以为数据库创建分析的图表。
@@ -510,7 +511,7 @@ Outposts是部署在客户机房的一体化机柜，在逻辑上作为AWS Regio
 
 # 6. 消息
 ## 6.1. SQS（Simple Queue Service）-简单队列服务
-消息被读取后会从队列中删除，消息不会被推送到接收者，接收方必须轮询或从SQS提取消息，并且消息不能同时被多个接收者接收。
+消息被读取后会从队列中删除，**消息不会被推送到接收者**，接收方必须轮询或从SQS提取消息，并且**消息不能同时被多个接收者接收**。
 
 ## 6.2. SNS（Simple Notification Service）-简单提示服务
 不保留消息，一旦触发，会发送给所有订阅者。
@@ -584,14 +585,15 @@ Amazon Kinesis可以让你轻松收集、处理和分析**实时流数据**。�
 Config负责跟踪所有创建、删除或管理的资源，通过记录配置及其随时间的变化来帮助审核和记录资源的合规性。
 
 ### 7.2.9. Macie
-一项管理数据安全和数据隐私的服务，可以帮你把存储在S3的数据归类为哪些是个人身份信息，即**PII（personally identifiable information）**。
+一项管理数据安全和数据隐私的服务，可以帮你把存储在S3的数据归类为哪些是个人身份信息，即**PII（personally identifiable information）**。<br>
+**这是它唯一能做的事，只能做存储数据的个人敏感性信息分析。**
 
 ### 7.2.10. Security Hub
 这是一种让你拥有中央安全工具来**管理不同AWS账号（Multi Account）** 之间的安全性并自动执行安全检查的方法。<br>
 多重安全检查的工具，将跨多个账号，把所有这些警报发送到一个称为安全中心的位置。
 
 ### 7.2.11. Detective
-Detective可以帮助你找到安全警报发生的根本原因。
+通过机器学习和图表分析，调查并快速确定安全问题和可疑活动的根本原因，从而让你能够快速找到问题根源。
 
 ### 7.2.12. Abuse
 如果你发现AWS的某些资源或者IP存在滥用或者违法的行为，可以举报至这个abuse@amazonaws邮箱。
@@ -695,7 +697,13 @@ Directory Services是Microsoft Active Directory（AD）集成到AWS的服务。
 ## 8.5. 其它服务
 ### 8.5.1. Trusted Advisor 
 通过优化AWS环境降低成本，提高性能并提高安全性的在线工具。<br>
-提供实时指导，帮助按照AWS最佳实践配置资源。
+提供实时指导，帮助按照AWS最佳实践配置资源。<br>
+它将分析你的账户，并且提供五个类别的建议：
+1. Cost optimization
+2. Performance
+3. Sercurity
+4. Fault tolerance
+5. Service limits
 
 ### 8.5.2. Compute Optimizer
 通过优化AWS资源去提高性能和减少开支。<br>
