@@ -12,6 +12,8 @@
         - [2.1.4. MFA（Multi Factor Authentication）](#214-mfamulti-factor-authentication)
     - [2.2. EC2](#22-ec2)
         - [2.2.1. 安全组（Security Groups）](#221-安全组security-groups)
+            - [2.2.1.1. 安全组特性](#2211-安全组特性)
+            - [2.2.1.2. 安全组规则](#2212-安全组规则)
         - [2.2.2. 存储](#222-存储)
             - [2.2.2.1. EBS（Elastic Block Store）](#2221-ebselastic-block-store)
             - [2.2.2.2. EFS（Elastic File System）](#2222-efselastic-file-system)
@@ -19,6 +21,7 @@
         - [2.2.3. 负载均衡-ELB（Elastic Load Balancing）](#223-负载均衡-elbelastic-load-balancing)
         - [2.2.4. ASG（Auto Scaling Groups）](#224-asgauto-scaling-groups)
         - [2.2.5. AMI（Amazon Machine Image）](#225-amiamazon-machine-image)
+        - [2.2.6. 置放群组（Placement Group）](#226-置放群组placement-group)
     - [2.3. S3](#23-s3)
     - [2.4. 数据库](#24-数据库)
         - [2.4.1. RDS-关系型数据库](#241-rds-关系型数据库)
@@ -227,16 +230,31 @@ MFA验证方式：
     - Haedware Key Fob MFA Device for AWS GovCloud（US）
 
 ## 2.2. EC2
-1. **实例重启后，公用IP会变化。** 弹性IP地址（Elastic IP）可以使实例重启后，公用IP不发生变化，但是需要支付一定费用，私有IP在实例重启后，不会变化。
-2. 默认实例用户：ec2-user。
+1. **实例停止后再启动，公有IP会变化，直接重启，公有IP不会变化。** 弹性IP地址（Elastic IP）可以使实例重启后，公用IP不发生变化，但是需要支付一定费用，私有IP在实例重启后，不会变化。
+2. Linux默认实例用户：ec2-user。
 
 ### 2.2.1. 安全组（Security Groups）
+#### 2.2.1.1. 安全组特性
 1. 防火墙，**默认允许任何流量流出，阻止任何流量流入。**
 2. **如果访问实例收到“time out”错误，就是防火墙错误；** 如果实例收到“connection refused”错误，那可能是访问服务没有开启等原因。
 3. 安全组可以被单个EC2实例，或者其它安全组引用。
 4. 在设置流量流入流出规则时，只有**allow**规则，没有**deny**。
+5. 可以设置流量访问的端口号和IP，**但不能禁止某些特定的IP地址访问主机，要达到这个效果需要使用网络访问控制列表（NACL）**。
+6. **安全组是有状态的，网络访问控制列表（NACL）是无状态的。**<br>
+所谓有状态是指如下图所示，实例通过10001端口向外部服务器的80端口发送流量，80端口默认返回流量到实例的10001端口，即使不设置10001端口可以访问的规则，也默认10001端口可以被外部服务器访问。<br>
+但是当外部服务器单向的访问10001端口，如下图的红色直线，则被拒绝。
+![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/14.png)
 
-安全组如下所示，可以设置流量访问的端口号和IP：
+#### 2.2.1.2. 安全组规则
+1. 名称
+2. 协议：常用协议TCP，UDP，ICMP。
+3. 端口范围：可以指定单独端口或者端口范围（例如 1000-2000）。
+4. 源或者目标：
+    - 一个单独的IPv4或者IPv6地址，必须使用/32，例如203.0.113.1/32。
+    - 一个IPv4或者IPv6的范围，必须使用/24，例如203.0.113.0/24。
+    - 前缀列表ID，例如pl-xxxxxx，即某个S3的ID。
+    - **其它安全组。如果指定IP有可能因为实例重启IP发生变化，用安全组则可以不用考虑IP变化问题。**
+5. 描述
 ![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/13.png)
 
 ### 2.2.2. 存储
@@ -270,6 +288,8 @@ ELB的类型：
 ### 2.2.5. AMI（Amazon Machine Image）
 类似与Docker的Image，通过**EC2 Image Builder**可以自动创建，维护，验证和测试AMI。<br>
 **AMI建立在区域（Regional）中**，但是可以跨区域复制。
+
+### 2.2.6. 置放群组（Placement Group）
 
 
 ## 2.3. S3
