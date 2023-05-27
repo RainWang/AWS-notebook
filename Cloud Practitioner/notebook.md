@@ -22,6 +22,7 @@
         - [2.2.4. ASG（Auto Scaling Groups）](#224-asgauto-scaling-groups)
         - [2.2.5. AMI（Amazon Machine Image）](#225-amiamazon-machine-image)
         - [2.2.6. 置放群组（Placement Group）](#226-置放群组placement-group)
+        - [2.2.7. 弹性网络接口ENI（Elastic Network Interfaces）](#227-弹性网络接口enielastic-network-interfaces)
     - [2.3. S3](#23-s3)
     - [2.4. 数据库](#24-数据库)
         - [2.4.1. RDS-关系型数据库](#241-rds-关系型数据库)
@@ -232,6 +233,7 @@ MFA验证方式：
 ## 2.2. EC2
 1. **实例停止后再启动，公有IP会变化，直接重启，公有IP不会变化。** 弹性IP地址（Elastic IP）可以使实例重启后，公用IP不发生变化，但是需要支付一定费用，私有IP在实例重启后，不会变化。
 2. Linux默认实例用户：ec2-user。
+3. 要设置休眠模式（Hibernate），需要给EBS的卷选择加密，休眠的时候，实例会把RAM里面的东西写入EBS卷中。
 
 ### 2.2.1. 安全组（Security Groups）
 #### 2.2.1.1. 安全组特性
@@ -290,7 +292,15 @@ ELB的类型：
 **AMI建立在区域（Regional）中**，但是可以跨区域复制。
 
 ### 2.2.6. 置放群组（Placement Group）
+启动新的实例时，实例会被随机放置到机房的某个机架上，通过置放群组，可以定义实例分布所在的硬件。<br>
+放置群组的类型：
+![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/15.png)
 
+### 2.2.7. 弹性网络接口ENI（Elastic Network Interfaces）
+1. 是VPC中的一个逻辑组件，代表一个虚拟网卡，是EC2访问网络的工具。
+2. 可以绑定安全组。
+3. **通过从EC2实例之间移动ENI，可以起到故障转移的作用。**
+4. **跟AZ绑定。**
 
 ## 2.3. S3
 1. S3的桶（Buckets）类似文件夹，存在桶（Buckets）里的用户数据叫对象（Object），即文件。
