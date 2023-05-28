@@ -245,7 +245,7 @@ MFA验证方式：
 6. **安全组是有状态的，网络访问控制列表（NACL）是无状态的。**<br>
 所谓有状态是指如下图所示，实例通过10001端口向外部服务器的80端口发送流量，80端口默认返回流量到实例的10001端口，即使不设置10001端口可以访问的规则，也默认10001端口可以被外部服务器访问。<br>
 但是当外部服务器单向的访问10001端口，如下图的红色直线，则被拒绝。
-![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/14.png)
+![安全组有状态](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/14.png)
 
 #### 2.2.1.2. 安全组规则
 1. 名称
@@ -257,13 +257,21 @@ MFA验证方式：
     - 前缀列表ID，例如pl-xxxxxx，即某个S3的ID。
     - **其它安全组。如果指定IP有可能因为实例重启IP发生变化，用安全组则可以不用考虑IP变化问题。**
 5. 描述
-![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/13.png)
+![安全组规则](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/13.png)
 
 ### 2.2.2. 存储
 #### 2.2.2.1. EBS（Elastic Block Store）
 1. 网络驱动器，通过网络链接实例，类似U盘，**一次只能绑定一个实例，实例终止，数据依旧能保留在EBS上。**
 2. **EBS跟可用区（AZ）绑定**，us-east-1a可用区的EBS不能链接到us-east-1b的实例，但是通过网络快照（snapshot），就可以在不同的可用区之间移动卷。
 3. 需要提前定义容量和IOPS，**后期可以扩展容量。**
+4. **预配置IOPS SSD（io1和io2）可以绑定到同一个区域的多个实例上。**
+5. **可以被绑定为Root Volume的EBS类型只有通用型SSD（gp2和gp3）和预配置IOPS SSD（io1和io2）。**
+
+EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1和io2）,吞吐量优化型HDD（st1），Cold HDD（sc1）。<br>
+不同类型之间的区别:
+![EBS类型](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/16.png)
+
+![EBS类型](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/17.png)
 
 #### 2.2.2.2. EFS（Elastic File System）
 1. 这是个网络文件系统，即NFS（network file system），**它可以同时链接到多个EC2实例，又称为共享网络文件系统。**
@@ -289,7 +297,7 @@ ELB的类型：
 
 ### 2.2.5. AMI（Amazon Machine Image）
 类似与Docker的Image，通过**EC2 Image Builder**可以自动创建，维护，验证和测试AMI。<br>
-**AMI建立在区域（Regional）中**，但是可以跨区域复制。
+**AMI建立在区域（Regional）中，不能用A区域的AMI在B区域创建实例**，但是可以跨区域复制。
 
 ### 2.2.6. 置放群组（Placement Group）
 启动新的实例时，实例会被随机放置到机房的某个机架上，通过置放群组，可以定义实例分布所在的硬件。<br>
