@@ -15,10 +15,14 @@
             - [2.2.1.1. 安全组特性](#2211-安全组特性)
             - [2.2.1.2. 安全组规则](#2212-安全组规则)
         - [2.2.2. 存储](#222-存储)
-            - [2.2.2.1. EBS（Elastic Block Store）](#2221-ebselastic-block-store)
-            - [2.2.2.2. EFS（Elastic File System）](#2222-efselastic-file-system)
-            - [2.2.2.3. FSx](#2223-fsx)
+            - [2.2.2.1. 实例存储（EC2 Instance Store）](#2221-实例存储ec2-instance-store)
+            - [2.2.2.2. EBS（Elastic Block Store）](#2222-ebselastic-block-store)
+            - [2.2.2.3. EFS（Elastic File System）](#2223-efselastic-file-system)
+            - [2.2.2.4. FSx](#2224-fsx)
         - [2.2.3. 负载均衡-ELB（Elastic Load Balancing）](#223-负载均衡-elbelastic-load-balancing)
+            - [2.2.3.1. 应用负载均衡ALB（Application Load Balancer）](#2231-应用负载均衡albapplication-load-balancer)
+            - [2.2.3.2. 网络负载均衡NLB（Network Load Balancer）](#2232-网络负载均衡nlbnetwork-load-balancer)
+            - [2.2.3.3. 网关负载均衡GLB（Gateway Load Balancer）](#2233-网关负载均衡glbgateway-load-balancer)
         - [2.2.4. ASG（Auto Scaling Groups）](#224-asgauto-scaling-groups)
         - [2.2.5. AMI（Amazon Machine Image）](#225-amiamazon-machine-image)
         - [2.2.6. 置放群组（Placement Group）](#226-置放群组placement-group)
@@ -26,6 +30,10 @@
     - [2.3. S3](#23-s3)
     - [2.4. 数据库](#24-数据库)
         - [2.4.1. RDS-关系型数据库](#241-rds-关系型数据库)
+            - [2.4.1.1. 只读副本（Read Replicas）](#2411-只读副本read-replicas)
+            - [2.4.1.2. Multi AZ（Disaster Recovery）](#2412-multi-azdisaster-recovery)
+            - [2.4.1.3. RDS Custom](#2413-rds-custom)
+            - [2.4.1.4. Aurora](#2414-aurora)
         - [2.4.2. NoSql-非关系型数据库](#242-nosql-非关系型数据库)
             - [2.4.2.1. DynamoDB](#2421-dynamodb)
             - [2.4.2.2. DocumentDB](#2422-documentdb)
@@ -234,12 +242,13 @@ MFA验证方式：
 1. **实例停止后再启动，公有IP会变化，直接重启，公有IP不会变化。** 弹性IP地址（Elastic IP）可以使实例重启后，公用IP不发生变化，但是需要支付一定费用，私有IP在实例重启后，不会变化。
 2. Linux默认实例用户：ec2-user。
 3. 要设置休眠模式（Hibernate），需要给EBS的卷选择加密，休眠的时候，实例会把RAM里面的东西写入EBS卷中。
+4. 连接实例后，通过 “curl http://169.254.169.254/latest/meta-data” 命令可以获得实例的metadata，通过 “curl http://169.254.169.254/latest/user-data” 命令可以获得实例的userdata。
 
 ### 2.2.1. 安全组（Security Groups）
 #### 2.2.1.1. 安全组特性
 1. 防火墙，**默认允许任何流量流出，阻止任何流量流入。**
 2. **如果访问实例收到“time out”错误，就是防火墙错误；** 如果实例收到“connection refused”错误，那可能是访问服务没有开启等原因。
-3. 安全组可以被单个EC2实例，或者其它安全组引用。
+3. 安全组可以被单个EC2实例，或者**其它安全组**引用。
 4. 在设置流量流入流出规则时，只有**allow**规则，没有**deny**。
 5. 可以设置流量访问的端口号和IP，**但不能禁止某些特定的IP地址访问主机，要达到这个效果需要使用网络访问控制列表（NACL）**。
 6. **安全组是有状态的，网络访问控制列表（NACL）是无状态的。**<br>
@@ -260,7 +269,10 @@ MFA验证方式：
 ![安全组规则](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/13.png)
 
 ### 2.2.2. 存储
-#### 2.2.2.1. EBS（Elastic Block Store）
+#### 2.2.2.1. 实例存储（EC2 Instance Store）
+是EC2所在服务器直接连接的硬盘空间，读写非常的**高性能**，但是存在数据存储不稳定不安全的问题，**适合缓存或临时数据的存储。**
+
+#### 2.2.2.2. EBS（Elastic Block Store）
 1. 网络驱动器，通过网络链接实例，类似U盘，**一次只能绑定一个实例，实例终止，数据依旧能保留在EBS上。**
 2. **EBS跟可用区（AZ）绑定**，us-east-1a可用区的EBS不能链接到us-east-1b的实例，但是通过网络快照（snapshot），就可以在不同的可用区之间移动卷。
 3. 需要提前定义容量和IOPS，**后期可以扩展容量。**
@@ -273,27 +285,52 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
 
 ![EBS类型](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/17.png)
 
-#### 2.2.2.2. EFS（Elastic File System）
+#### 2.2.2.3. EFS（Elastic File System）
 1. 这是个网络文件系统，即NFS（network file system），**它可以同时链接到多个EC2实例，又称为共享网络文件系统。**
 2. **只能用于EC2，可以跨多个可用区（AZ）。** 一个AZ中的实例可能与另一个AZ中的实例共享一个EFS。
 3. 价格是EBS的3倍，但是**不需要提前定义容量，用多少付多少。**
 4. 通过启用EFS Infrequent Access（EFS-IA）策略，可以让EFS中不常访问的文件（大于60天），自动移动到EFS-IA中，EFS-IA能提供高达92%的折扣。
 5. **只能用于Linux实例。**
 
-#### 2.2.2.3. FSx
+#### 2.2.2.4. FSx
 **可用于混合云**，用于AWS的第三方**高性能（HPC）文件系统**，可以让EC2实例和**客户自己的数据中心**共享文件。
 1. Amazon FSx for Windows：Windows本机文件共享系统。
 2. Amazon FSx for Lustre：Linux的并行文件系统，主要用于高性能（HPC）的场景。
 
 ### 2.2.3. 负载均衡-ELB（Elastic Load Balancing）
-ELB的类型：
-1. 应用负载均衡ALB（Application Load Balancer）：Http/Https/gRPC协议，位于网络协议第七层。
-2. 网络负载均衡NLB（Network Load Balancer）：TCP/UDP协议，位于网络协议第四层。**它非常高性能，每秒能处理几百万请求。**
-3. 网关负载均衡GLB（Gateway Load Balancer）：位于网络协议第三层。
+1. **健康检查（Health Check）** 支持协议：HTTP，HTTPS，TCP。**健康检查（Health Check）** 不通过的实例会被终止。
+2. **Listeners**可以用来监听用户对ELB发起的请求，以及ELB和后台EC2实例之间的请求，支持HTTP, HTTPS, SSL, TCP协议。
+3. 如果启用**粘性会话（Sticky Sessions）**，则在会话期间ELB会将来自某个用户的所有请求都转发到同一个实例上。
+4. **Cross Zone**属性支持跨区域平衡，下图为开启**Cross Zone**和没开启**Cross Zone**的区别：<br>
+![Cross Zone](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/19.png)
+    - ALB默认打开此属性，AZ之间传输不收费。
+    - NLB默认不开启此属性，AZ之间传输收取费用。
+5. **连接耗尽（Connection Draining-for CLB/Deregistration Delay-for ALB&NLB）** 能保证该不健康的实例在处理完所有已有的连接请求之后，才真正地从ELB内去除，接着ELB不会再转发请求给这个实例。
+6. ALB和NLB和CloudFont可以使用**SNI（Server Name Indication）**。
+7. 以下cookie名称被ELB保留：AWSALB, AWSALBAPP, AWSALBTG。
+
+#### 2.2.3.1. 应用负载均衡ALB（Application Load Balancer）
+1. 支持Http/Https/gRPC协议，位于网络协议第七层。
+2. 可以绑定安全组。
+
+#### 2.2.3.2. 网络负载均衡NLB（Network Load Balancer）
+1. 支持TCP/UDP协议，位于网络协议第四层。
+2. **它非常高性能，每秒能处理几百万请求。**
+3. **支持静态IP地址用于负载均衡器**，ALB只能使用域名。
+4. 不能绑定安全组，ALB可以绑定安全组。
+
+#### 2.2.3.3. 网关负载均衡GLB（Gateway Load Balancer）
+位于网络协议第三层，可以在流量发送到APP之前，先转发到第三方的APP，让第三方对流量进行判断，再决定是否继续发送流量，如下图所示：
+![GLB](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/18.png)
 
 ### 2.2.4. ASG（Auto Scaling Groups）
 1. 当ASG被删除，所创建的实例也会被自动删除。
-2. ASG的收缩策略：手动策略，动态策略，预测策略。
+2. ASG的收缩策略：
+    - 动态策略：
+        - Target Tracking Scaling：最简单的收缩策略，如可以设置ASG的CPU平均使用率在40%。
+        - Simple / Step Scaling：通过CloudWatch的警报触发，如CPU使用率超过70%，增加两个实例，低于40%，减少一个实例。
+        - Scheduled Actions：设置在某个时间的增加或者减少实例。
+    - 预测策略
 
 ### 2.2.5. AMI（Amazon Machine Image）
 类似与Docker的Image，通过**EC2 Image Builder**可以自动创建，维护，验证和测试AMI。<br>
@@ -345,11 +382,27 @@ ELB的类型：
 
 ## 2.4. 数据库
 ### 2.4.1. RDS-关系型数据库
-1. **不能SSH到数据库实例。**
+1. 数据库端口3306，**不能SSH到数据库实例。**
 2. AWS自带的Aurora数据库比普通的RDS数据库效率更高，但是是收费的。
-3. 可以创建数据库只读副本（Read Replicas）去提高数据库的访问速度，最大只能创建15个，**只读副本可以跨区域创建**。
-4. 可以在其它AZ创建故障转移副本（Failover DB）去防止突发情况，只能在其它AZ中选一个AZ创建故障转移副本，故障转移副本平常不可访问，只有等主DB发生故障时才可访问。
-5. 可以使用**ElastiCache**对数据库的读取速度进行优化，ElastiCache是一种数据库缓存技术，支持Redis和Memcached。
+3. 可以使用**ElastiCache**对数据库的读取速度进行优化，ElastiCache是一种数据库缓存技术，支持Redis和Memcached。
+4. **Storage Auto Scaling**属性可以在数据库用量不足的情况下，自动扩展数据库。
+
+#### 2.4.1.1. 只读副本（Read Replicas）
+1. 可以创建数据库**只读副本（Read Replicas）** 去提高数据库的访问速度，最大只能创建15个。
+2. 可以在同一个AZ或者多AZ或者**跨区域**创建，同一区域副本间复制不用收费，**跨区域**副本复制要收费。
+3. 副本之间**异步复制**。
+
+#### 2.4.1.2. Multi AZ（Disaster Recovery）
+1. 可以在其它AZ创建**故障转移副本（Failover DB）** 去防止突发情况，只能在其它AZ中选一个AZ创建故障转移副本，故障转移副本平常不可访问，只有等主DB发生故障时才可访问。
+2. **同步复制**。
+3. **可以把一个只读副本（Read Replicas）设置为Multi AZ。**
+4. 从Single AZ变成Multi AZ是不需要把RDS停机的，即**zero downtime** 。原理是RDS内部会先创建一个主数据库快照，通过快照创建从数据库，从数据库创建完成后，会在主从数据库之间同步数据。
+
+#### 2.4.1.3. RDS Custom
+RDS是托管服务，但是可以通过RDS Custom实现一些自定义功能，RDS Custom目前只支持Oracle和Microsoft SQL Server两个数据库。
+
+#### 2.4.1.4. Aurora
+
 
 ### 2.4.2. NoSql-非关系型数据库
 #### 2.4.2.1. DynamoDB
@@ -675,6 +728,8 @@ Directory Services是Microsoft Active Directory（AD）集成到AWS的服务。
 5. Auto Scaling
 6. Consolidated Biling
 7. 新手免费套餐
+
+免费服务查询：https://aws.amazon.com/cn/free/
 
 ## 8.2. 成本计算器
 ### 8.2.1. 估算成本
