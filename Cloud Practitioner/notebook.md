@@ -158,6 +158,7 @@
         - [10.1.9. Personalize](#1019-personalize)
         - [10.1.10. Textract](#10110-textract)
         - [10.1.11. Lex & Connect](#10111-lex--connect)
+        - [10.1.12. Comprehend Medical](#10112-comprehend-medical)
     - [10.2. WorkSpaces](#102-workspaces)
     - [10.3. Amazon AppStream 2.0](#103-amazon-appstream-20)
     - [10.4. AWS IoT Core](#104-aws-iot-core)
@@ -320,7 +321,7 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
 4. 不能绑定安全组，ALB可以绑定安全组。
 
 #### 2.2.3.3. 网关负载均衡GLB（Gateway Load Balancer）
-位于网络协议第三层，可以在流量发送到APP之前，先转发到第三方的APP，让第三方对流量进行判断，再决定是否继续发送流量，如下图所示：
+位于网络协议第三层，可以在流量发送到APP之前，先转发到第三方的APP，让第三方对流量进行判断，再决定是否继续发送流量，如下图所示：<br>
 ![GLB](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/18.png)
 
 ### 2.2.4. ASG（Auto Scaling Groups）
@@ -864,22 +865,22 @@ AWS Solutions：https://aws.amazon.com/solutions<br>
 # 10. 其它服务
 ## 10.1. 机器学习
 ### 10.1.1. Rekognition
-物体识别，人脸识别，文本检测，Pathing（例如运动中的路径选择）。
+物体识别，人脸识别，文本检测，Pathing（例如运动中的路径选择），社交网络上对图片合法性的分析。
 
 ### 10.1.2. Transcribe
-将语言转成文本。
+将语音转成文本，自动移除语音中的个人敏感信息（PII），自动识别是哪一国语言。
 
 ### 10.1.3. Polly
-将文本转成语言。
+将文本转成语音，使用SSML（）可以控制语音，如加一个停顿时间。
 
 ### 10.1.4. Translate
 翻译。
 
 ### 10.1.5. Comprehend
-一种自然语言处理，用于文字分析，提取文字中的情绪主题等。
+一种自然语言处理NLP（Natural Language Processing），用于文字分析，提取文字中的情绪主题等。
 
 ### 10.1.6. SageMaker
-创建机器学习模型。
+供专业开发人员创建机器学习模型用。
 
 ### 10.1.7. Forecast
 把数据上传到S3，Forecast会利用数据预测结果。
@@ -895,6 +896,9 @@ AWS Solutions：https://aws.amazon.com/solutions<br>
 
 ### 10.1.11. Lex & Connect
 Lex类似于Alexa，像小米机器人那种，可以智能聊天，Connect可以创建智能客服中心。
+
+### 10.1.12. Comprehend Medical
+使用NLP去检测文档中所受保护的健康信息。
 
 ## 10.2. WorkSpaces
 DaaS（Desktop as a Service）服务，让你可以轻松的调用Linux或者Windows桌面。<br>
