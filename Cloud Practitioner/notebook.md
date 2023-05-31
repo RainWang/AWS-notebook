@@ -34,6 +34,10 @@
             - [2.4.1.2. Multi AZ（Disaster Recovery）](#2412-multi-azdisaster-recovery)
             - [2.4.1.3. RDS Custom](#2413-rds-custom)
             - [2.4.1.4. Aurora](#2414-aurora)
+            - [2.4.1.5. RDS备份](#2415-rds备份)
+            - [2.4.1.6. 数据库加密](#2416-数据库加密)
+            - [2.4.1.7. 数据库代理](#2417-数据库代理)
+            - [2.4.1.8. ElastiCache](#2418-elasticache)
         - [2.4.2. NoSql-非关系型数据库](#242-nosql-非关系型数据库)
             - [2.4.2.1. DynamoDB](#2421-dynamodb)
             - [2.4.2.2. DocumentDB](#2422-documentdb)
@@ -68,6 +72,8 @@
     - [4.5. OpsWorks](#45-opsworks)
 - [5. 网络](#5-网络)
     - [5.1. Route53-域名解析服务](#51-route53-域名解析服务)
+        - [5.1.1. DNS路由策略（Routing Policy）](#511-dns路由策略routing-policy)
+        - [5.1.2. DNS记录类型](#512-dns记录类型)
     - [5.2. CloudFront-内容分发服务](#52-cloudfront-内容分发服务)
     - [5.3. VPC（Virtual Private Cloud）](#53-vpcvirtual-private-cloud)
         - [5.3.1. 子网（subnets）](#531-子网subnets)
@@ -242,7 +248,7 @@ MFA验证方式：
 ## 2.2. EC2
 1. **实例停止后再启动，公有IP会变化，直接重启，公有IP不会变化。** 弹性IP地址（Elastic IP）可以使实例重启后，公用IP不发生变化，但是需要支付一定费用，私有IP在实例重启后，不会变化。
 2. Linux默认实例用户：ec2-user。
-3. 要设置休眠模式（Hibernate），需要给EBS的卷选择加密，休眠的时候，实例会把RAM里面的东西写入EBS卷中。
+3. 要设置**休眠模式（Hibernate）**，需要给EBS的卷选择加密，休眠的时候，实例会把RAM里面的东西写入EBS卷中。
 4. 连接实例后，通过 “curl http://169.254.169.254/latest/meta-data” 命令可以获得实例的metadata，通过 “curl http://169.254.169.254/latest/user-data” 命令可以获得实例的userdata。
 
 ### 2.2.1. 安全组（Security Groups）
@@ -364,7 +370,7 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
     - Same-Region Replication（SRR）同区域拷贝
 10. S3的复制（Replication）机制是一个异步复制机制，**而且必须开启版本控制（Versioning）功能**。
 11. S3的存储类别（S3 Storage Classes），可以手动修改对象的存储类别，也可以通过设置桶的 **“生命周期规则”（lifecycle rule）** 去让桶自动归类对象的存储类别：
-![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/8.png)
+![S3](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/8.png)
 12. **S3默认开启服务器端加密**，即上传的对象由AWS加密，也可以修改为客户端加密，即由客户自己加密对象后上传。
 13. S3 Snow Family：
     - Snowcone：
@@ -383,10 +389,17 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
 
 ## 2.4. 数据库
 ### 2.4.1. RDS-关系型数据库
-1. 数据库端口3306，**不能SSH到数据库实例。**
+1. **不能SSH到数据库实例。**
 2. AWS自带的Aurora数据库比普通的RDS数据库效率更高，但是是收费的。
-3. 可以使用**ElastiCache**对数据库的读取速度进行优化，ElastiCache是一种数据库缓存技术，支持Redis和Memcached。
-4. **Storage Auto Scaling**属性可以在数据库用量不足的情况下，自动扩展数据库。
+3. **Storage Auto Scaling**属性可以在数据库用量不足的情况下，自动扩展数据库。
+4. **即使数据库被停止，依旧需要支付存储费用**，所以建议在数据库不使用的时候，可以创建快照后删除数据库，在再次使用时通过快照从新创建数据库。
+5. 数据库各个端口：
+    - PostgreSQL: 5432
+    - MySQL: 3306
+    - Oracle RDS: 1521
+    - MSSQL Server: 1433
+    - MariaDB: 3306 (same as MySQL)
+    - Aurora: 5432 (if PostgreSQL compatible) or 3306 (if MySQL compatible)
 
 #### 2.4.1.1. 只读副本（Read Replicas）
 1. 可以创建数据库**只读副本（Read Replicas）** 去提高数据库的访问速度，最大只能创建15个。
@@ -398,12 +411,48 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
 2. **同步复制**。
 3. **可以把一个只读副本（Read Replicas）设置为Multi AZ。**
 4. 从Single AZ变成Multi AZ是不需要把RDS停机的，即**zero downtime** 。原理是RDS内部会先创建一个主数据库快照，通过快照创建从数据库，从数据库创建完成后，会在主从数据库之间同步数据。
+5. Aurora数据库本身就支持多可用区部署的高可用设置，因此不需要为Aurora数据库特别开启这个功能。
 
 #### 2.4.1.3. RDS Custom
-RDS是托管服务，但是可以通过RDS Custom实现一些自定义功能，RDS Custom目前只支持Oracle和Microsoft SQL Server两个数据库。
+1. RDS是托管服务，但是可以通过RDS Custom对数据库底层实现一些自定义功能。
+2. RDS Custom目前只支持Oracle和Microsoft SQL Server两个数据库。
+3. 开启RDS Custom后，**可以支持SSH到数据库。**
+4. 为了防止人为对数据库的误操作，建议开启RDS Custom之前备份数据库。
 
 #### 2.4.1.4. Aurora
+1. 与**Postgres**和**MySQL**兼容。
+2. Aurora通过**Writer Endpoint**向主节点写入，通过**Reader Endpoint**把读操作平均分配到各个从节点，如下图所示：
+![Aurora](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/20.png)
+3. Aurora支持自定义节点（Custom Endpoint），如下图所示：
+![Aurora](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/21.png)
+4. Global Aurora可以在1秒内完成跨区域复制。
+5. Aurora支持机器学习中的**SageMaker**和**Comprehend**，如下图所示，APP可以通过向Aurora查询可以推荐给用户的产品，Aurora向AI发送用户基础信息后，返回一个AI预测的结果给APP。
+![Aurora](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/22.png)
 
+#### 2.4.1.5. RDS备份
+1. RDS提供了两种不同的备份方式，分别是自动备份（Automated Backups）和快照（Snapshots）。
+2. 自动备份（Automated Backups）有1到35天的保留时间，快照（Snapshots）由用户自己创建，可以无期限保留。
+3. **Aurora的自动备份（Automated Backups）是不能被禁用的** ，RDS可以。
+4. 数据库恢复有以下3种方式：
+    - 通过自动备份（Automated Backups）和快照（Snapshots）创建新的数据库。
+    - 创建自己数据库的备份存储到S3中，通过S3创建新的RDS数据库。
+    - 通过**Percona XtraBackup**创建自己数据库的备份存储到S3中，通过S3创建新的Aurora集群。
+5. Aurora可以快速克隆数据库。
+
+#### 2.4.1.6. 数据库加密
+1. 一旦启用了加密的功能，所有数据的存储都将会被加密，包括数据库本身、自动备份、快照和只读副本（read replicas）。
+2. 如果在创建数据库的时候没有加密，我们不能在事后对其进行加密，但我们可以创建这个数据库的快照，复制该快照并且加密这个复制的版本。
+
+#### 2.4.1.7. 数据库代理
+用于池化数据库的连接，用户最大限度的减少和故障转移时间，强制执行IAM验证，并且不支持公有访问。
+
+#### 2.4.1.8. ElastiCache
+1. 可以使用**ElastiCache**对数据库的读取速度进行优化，ElastiCache是一种数据库缓存技术，支持**Redis**和**Memcached**。
+2. Redis可以跨区域和创建只读副本，有更高的可用性，而Memcached只是纯粹的缓存，不能创建副本，有丢失数据的风险。
+3. Redis支持排序功能，Memcached不支持。
+
+下图是Redis和Memcached的主要区别：
+![ElastiCache](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/23.png)
 
 ### 2.4.2. NoSql-非关系型数据库
 #### 2.4.2.1. DynamoDB
@@ -523,18 +572,21 @@ RDS是托管服务，但是可以通过RDS Custom实现一些自定义功能，R
 
 # 5. 网络
 ## 5.1. Route53-域名解析服务
-1. 主要的三个功能：域名注册，DNS路由，运行状况检查。
-2. DNS路由策略：
-    - 简单路由
-    - 地理位置路由
-    - 故障转移路由
-    - 加权路由
-    - 基于延迟的路由
-    - 多值应答路由
-3. DNS的记录类型：
-    - A记录：是用来指定主机名（或者说是域名）对应的IP地址记录，可以通过A记录来给网站的域名指向到自己的web 服务器上之后，那么访问域名的内容就会来自于自己的web服务器。
-    - CNAME：通常称为别名解析，可以将注册的不同域名都转到一个域名记录上，由这个域名记录统一解析管理，与A记录不同的是，CNAME别名记录设置的可以是一个域名。
+主要的三个功能：域名注册，DNS路由，运行状况检查。
 
+### 5.1.1. DNS路由策略（Routing Policy）
+1. 简单路由策略（Simple Routing Policy）：提供单一资源的策略类型，即一个DNS域名指向一个单一目标
+2. 加权路由策略（Weighted Routing Policy）：按照不同的权值比例将流量分配到不同的目标上去
+3. 延迟路由策略（Latency Routing Policy）：根据网络延迟的不同，将与用户延迟最小的结果应答给最终用户
+4. 地理位置路由策略（Geolocation Routing Policy）：根据用户所在的地理位置，将不同的目标结果应答给用户
+5. 故障转移路由策略（Failover Routing Policy）：配置主动/被动（Active/Passive）的故障转移策略，保证DNS解析的容灾
+
+### 5.1.2. DNS记录类型
+1. A记录：记录可以将域名直接转换为IPv4的地址，比方说将aws.xiaopeiqing.com转换为地址120.79.65.207
+2. CNAME：可以将一个域名指向另一个域名，比如将 aws.xiaopeiqing.com 指向 xiaopeiqing.com。
+3. Alias：和CNAME类似，又叫做别名记录，可以将一个域名指向另一个域名，**与CNAME最大的区别是可以作用于根域名。**
+4. **考试中，如果出现选择Alias记录和CNAME记录的选择，95%的情况都要选择Alias记录。**
+    
 ## 5.2. CloudFront-内容分发服务
 1. CDN加速，原理就是在全球建立CDN服务器，即边缘站点（Edge Locations）和区域边缘缓存（Regional Edge Caches），依靠缓存加速网页访问速度。
 2. 内容源（Origin），CloudFront分发的内容来源：
@@ -871,7 +923,9 @@ AWS Solutions：https://aws.amazon.com/solutions<br>
 将语音转成文本，自动移除语音中的个人敏感信息（PII），自动识别是哪一国语言。
 
 ### 10.1.3. Polly
-将文本转成语音，使用SSML（）可以控制语音，如加一个停顿时间。
+将文本转成语音，有两个重要特性：
+- SSML（Speech Synthesis Markup Language）：可以控制语音，如加一个停顿时间，生成耳语等。
+- 使用Pronunciation lexicons可以对缩写单词进行扩展，如AWS => “Amazon Web Services”。
 
 ### 10.1.4. Translate
 翻译。
