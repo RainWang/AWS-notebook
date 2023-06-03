@@ -28,6 +28,13 @@
         - [2.2.6. 置放群组（Placement Group）](#226-置放群组placement-group)
         - [2.2.7. 弹性网络接口ENI（Elastic Network Interfaces）](#227-弹性网络接口enielastic-network-interfaces)
     - [2.3. S3](#23-s3)
+        - [2.3.1. 版本控制（Versioning）](#231-版本控制versioning)
+        - [2.3.2. 复制（Replication）](#232-复制replication)
+        - [2.3.3. 存储类别（Storage Classes）](#233-存储类别storage-classes)
+        - [2.3.4. 安全和加密](#234-安全和加密)
+        - [2.3.5. 静态网站托管](#235-静态网站托管)
+        - [2.3.6. Snow Family](#236-snow-family)
+        - [2.3.7. 存储网关（Storage Gateway）](#237-存储网关storage-gateway)
     - [2.4. 数据库](#24-数据库)
         - [2.4.1. RDS-关系型数据库](#241-rds-关系型数据库)
             - [2.4.1.1. 只读副本（Read Replicas）](#2411-只读副本read-replicas)
@@ -74,6 +81,8 @@
     - [5.1. Route53-域名解析服务](#51-route53-域名解析服务)
         - [5.1.1. DNS路由策略（Routing Policy）](#511-dns路由策略routing-policy)
         - [5.1.2. DNS记录类型](#512-dns记录类型)
+        - [5.1.3. TTL（Time to Live）](#513-ttltime-to-live)
+        - [5.1.4. Health Checks](#514-health-checks)
     - [5.2. CloudFront-内容分发服务](#52-cloudfront-内容分发服务)
     - [5.3. VPC（Virtual Private Cloud）](#53-vpcvirtual-private-cloud)
         - [5.3.1. 子网（subnets）](#531-子网subnets)
@@ -283,8 +292,8 @@ MFA验证方式：
 1. 网络驱动器，通过网络链接实例，类似U盘，**一次只能绑定一个实例，实例终止，数据依旧能保留在EBS上。**
 2. **EBS跟可用区（AZ）绑定**，us-east-1a可用区的EBS不能链接到us-east-1b的实例，但是通过网络快照（snapshot），就可以在不同的可用区之间移动卷。
 3. 需要提前定义容量和IOPS，**后期可以扩展容量。**
-4. **预配置IOPS SSD（io1和io2）可以绑定到同一个区域的多个实例上。**
-5. **可以被绑定为Root Volume的EBS类型只有通用型SSD（gp2和gp3）和预配置IOPS SSD（io1和io2）。**
+4. **只有预配置IOPS SSD（io1和io2）可以绑定到同一个区域的多个实例上。**
+5. **可以被绑定为根卷（Root Volume）的EBS类型只有通用型SSD（gp2和gp3）和预配置IOPS SSD（io1和io2）。**
 
 EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1和io2）,吞吐量优化型HDD（st1），Cold HDD（sc1）。<br>
 不同类型之间的区别:
@@ -305,16 +314,15 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
 2. Amazon FSx for Lustre：Linux的并行文件系统，主要用于高性能（HPC）的场景。
 
 ### 2.2.3. 负载均衡-ELB（Elastic Load Balancing）
-1. **健康检查（Health Check）** 支持协议：HTTP，HTTPS，TCP。**健康检查（Health Check）** 不通过的实例会被终止。
-2. **Listeners**可以用来监听用户对ELB发起的请求，以及ELB和后台EC2实例之间的请求，支持HTTP, HTTPS, SSL, TCP协议。
-3. 如果启用**粘性会话（Sticky Sessions）**，则在会话期间ELB会将来自某个用户的所有请求都转发到同一个实例上。
-4. **Cross Zone**属性支持跨区域平衡，下图为开启**Cross Zone**和没开启**Cross Zone**的区别：<br>
+1. **健康检查（Health Check）** 支持协议：HTTP，HTTPS，TCP。**健康检查（Health Check）不通过的实例会被ELB终止。**
+2. 如果启用**粘性会话（Sticky Sessions）**，则在会话期间ELB会将来自某个用户的所有请求都转发到同一个实例上。
+3. **Cross Zone**属性支持跨区域平衡，下图为开启**Cross Zone**和没开启**Cross Zone**的区别：<br>
 ![Cross Zone](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/19.png)
     - ALB默认打开此属性，AZ之间传输不收费。
     - NLB默认不开启此属性，AZ之间传输收取费用。
-5. **连接耗尽（Connection Draining-for CLB/Deregistration Delay-for ALB&NLB）** 能保证该不健康的实例在处理完所有已有的连接请求之后，才真正地从ELB内去除，接着ELB不会再转发请求给这个实例。
-6. ALB和NLB和CloudFont可以使用**SNI（Server Name Indication）**。
-7. 以下cookie名称被ELB保留：AWSALB, AWSALBAPP, AWSALBTG。
+4. **连接耗尽（Connection Draining-for CLB/Deregistration Delay-for ALB&NLB）** 能保证该不健康的实例在处理完所有已有的连接请求之后，才真正地从ELB内去除，接着ELB不会再转发请求给这个实例。
+5. ALB和NLB和CloudFont可以使用**SNI（Server Name Indication）**。**SNI（Server Name Indication）** 是 TLS的扩展，这允许在握手过程开始时通过客户端告诉它正在连接的服务器的主机名称，用来解决一个服务器拥有多个域名或者多个虚拟主机的情况。
+6. 以下cookie名称被ELB保留：AWSALB, AWSALBAPP, AWSALBTG。
 
 #### 2.2.3.1. 应用负载均衡ALB（Application Load Balancer）
 1. 支持Http/Https/gRPC协议，位于网络协议第七层。
@@ -323,7 +331,7 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
 #### 2.2.3.2. 网络负载均衡NLB（Network Load Balancer）
 1. 支持TCP/UDP协议，位于网络协议第四层。
 2. **它非常高性能，每秒能处理几百万请求。**
-3. **支持静态IP地址用于负载均衡器**，ALB只能使用域名。
+3. **支持静态IP地址用于负载均衡器**。
 4. 不能绑定安全组，ALB可以绑定安全组。
 
 #### 2.2.3.3. 网关负载均衡GLB（Gateway Load Balancer）
@@ -346,7 +354,7 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
 ### 2.2.6. 置放群组（Placement Group）
 启动新的实例时，实例会被随机放置到机房的某个机架上，通过置放群组，可以定义实例分布所在的硬件。<br>
 放置群组的类型：
-![IAM授权使用案例](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/15.png)
+![置放群组](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/15.png)
 
 ### 2.2.7. 弹性网络接口ENI（Elastic Network Interfaces）
 1. 是VPC中的一个逻辑组件，代表一个虚拟网卡，是EC2访问网络的工具。
@@ -363,29 +371,59 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
     - s3://1006493605/**test.png**
 5. S3内部没有文件夹的概念，是通过对象的Key去找到对象的。
 6. S3最大可以上传5TB（5000GB）的对象，如果上传的对象大于5TB，则要通过“multi-part”上传，即5TB对象需要分成1000份上传。
-7. 可以通过S3**桶策略（Bucket Policies）** 或者IAM策略去定义S3中对象（Object）的访问权限。
-8. S3的**Versioning**功能可以开启S3的版本控制功能。
-9. S3的**复制（Replication）** 机制：
+7. 属于**无服务（serverless）** ，即不需要创建实例。
+
+### 2.3.1. 版本控制（Versioning）
+1. 如果没有开启版本控制，默认版本为null。
+2. 关闭版本控制功能，之前创建的版本文件也不会被删除。
+3. 必须在桶（Buckets）级别允许版本控制。
+4. 启用了版本控制功能之后，要恢复一个文件，**只需要删除删除标记（Delete Marker）即可。**
+5. 版本控制默认不开启，**但一旦启用，就不能关闭**，只能暂停。
+
+### 2.3.2. 复制（Replication）
+1. S3的复制（Replication）机制是一个**异步复制**机制，**而且必须开启版本控制（Versioning）功能**。
+2. 类别：
     - Cross-Region Replication（CRR）跨区域拷贝
     - Same-Region Replication（SRR）同区域拷贝
-10. S3的复制（Replication）机制是一个异步复制机制，**而且必须开启版本控制（Versioning）功能**。
-11. S3的存储类别（S3 Storage Classes），可以手动修改对象的存储类别，也可以通过设置桶的 **“生命周期规则”（lifecycle rule）** 去让桶自动归类对象的存储类别：
-![S3](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/8.png)
-12. **S3默认开启服务器端加密**，即上传的对象由AWS加密，也可以修改为客户端加密，即由客户自己加密对象后上传。
-13. S3 Snow Family：
-    - Snowcone：
-         - Snowcone：<br>
-        提供了8TB的HDD。
-        - Snowcone SSD：<br>
-        提供了16TB的SDD。   
-    - Snowball Edage：
-        - Snowball Edge Storage Optimized：<br>
-        提供了80TB的可用数据块。
-        - Snowball Edge Compute Optimized：<br>
-        提供了42TB的可用数据块。
-    - Snowmobile：提供100PB的存储空间。
-14. 通过**存储网关（Storage Gateway）** 可以把客户的文件系统与AWS的云桥接起来，用于混合云。
-15. 属于**无服务（serverless）** ，即不需要创建实例。
+3. **S3保证所有数据会在15分钟内同步完成。**
+
+### 2.3.3. 存储类别（Storage Classes）
+可以手动修改对象的存储类别，也可以通过设置桶的 **“生命周期规则”（lifecycle rule）** 去让桶自动归类对象的存储类别：
+![S3](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/24.png)
+
+两种Glacier的区别：
+![S3](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/25.png)
+
+S3智能分层：
+![S3](https://1006493605.s3.ap-northeast-1.amazonaws.com/notebook/Cloud_Practitioner/26.png)
+
+### 2.3.4. 安全和加密
+**S3默认开启服务器端加密**，即上传的对象由AWS加密，也可以修改为客户端加密，即由客户自己加密对象后上传。
+
+可以通过S3**桶策略（Bucket Policies）** 或者IAM策略去定义S3中对象（Object）的访问权限。
+
+### 2.3.5. 静态网站托管
+1. 静态网站托管如果要使用HTTPS，需要搭配CloudFront使用才行，**默认情况下S3的静态网站只支持HTTP协议。**
+2. S3托管的静态网站URL会带s3-website，如下所示：<br>
+>http://iteablue.com.**s3-website**–ap-northeast-2.amazonaws.com<br>
+或者<br>
+http://iteablue.com.**s3-website**.ap-northeast-2.amazonaws.com
+
+### 2.3.6. Snow Family
+1. Snowcone：
+    - Snowcone：<br>
+    提供了8TB的HDD。
+    - Snowcone SSD：<br>
+    提供了16TB的SDD。   
+2. Snowball Edage：
+    - Snowball Edge Storage Optimized：<br>
+    提供了80TB的可用数据块。
+    - Snowball Edge Compute Optimized：<br>
+    提供了42TB的可用数据块。
+3. Snowmobile：提供100PB的存储空间。
+
+### 2.3.7. 存储网关（Storage Gateway）
+通过**存储网关（Storage Gateway）** 可以把客户的文件系统与AWS的云桥接起来，用于混合云。
 
 ## 2.4. 数据库
 ### 2.4.1. RDS-关系型数据库
@@ -575,18 +613,31 @@ EBS提供以下卷类型：通用型SSD（gp2和gp3）,预配置IOPS SSD（io1�
 主要的三个功能：域名注册，DNS路由，运行状况检查。
 
 ### 5.1.1. DNS路由策略（Routing Policy）
-1. 简单路由策略（Simple Routing Policy）：提供单一资源的策略类型，即一个DNS域名指向一个单一目标
-2. 加权路由策略（Weighted Routing Policy）：按照不同的权值比例将流量分配到不同的目标上去
-3. 延迟路由策略（Latency Routing Policy）：根据网络延迟的不同，将与用户延迟最小的结果应答给最终用户
-4. 地理位置路由策略（Geolocation Routing Policy）：根据用户所在的地理位置，将不同的目标结果应答给用户
-5. 故障转移路由策略（Failover Routing Policy）：配置主动/被动（Active/Passive）的故障转移策略，保证DNS解析的容灾
+1. 简单路由策略（Simple Routing Policy）：提供单一资源的策略类型，即一个DNS域名指向一个单一目标。
+2. 加权路由策略（Weighted Routing Policy）：按照不同的权值比例将流量分配到不同的目标上去。
+3. 延迟路由策略（Latency Routing Policy）：根据网络延迟的不同，将与用户延迟最小的结果应答给最终用户。
+4. 地理位置路由策略（Geolocation Routing Policy）：根据用户所在的地理位置，将不同的目标结果应答给用户。
+5. 故障转移路由策略（Failover Routing Policy）：配置主动/被动（Active/Passive）的故障转移策略，保证DNS解析的容灾。
+6. 地理邻近性路由策略（Geoproximity Routing Policy）：允许您根据用户和aws资源的地理位置引导流量，增加偏差，将一个流量从一个区域转移到另一个区域。
+7. 基于IP的路由策略（IP-based Routing Policy）：基于IP地址的路由。
+8. 多值路由（Multi-Value Routing Policy）：
 
 ### 5.1.2. DNS记录类型
-1. A记录：记录可以将域名直接转换为IPv4的地址，比方说将aws.xiaopeiqing.com转换为地址120.79.65.207
-2. CNAME：可以将一个域名指向另一个域名，比如将 aws.xiaopeiqing.com 指向 xiaopeiqing.com。
-3. Alias：和CNAME类似，又叫做别名记录，可以将一个域名指向另一个域名，**与CNAME最大的区别是可以作用于根域名。**
-4. **考试中，如果出现选择Alias记录和CNAME记录的选择，95%的情况都要选择Alias记录。**
-    
+1. A：记录可以将域名直接转换为IPv4的地址，比方说将aws.xiaopeiqing.com转换为地址120.79.65.207。
+2. AAAA：记录可以将域名直接转换为IPv6的地址。
+3. CNAME：可以将一个域名指向另一个域名，但是不能作用于根域名。
+4. Alias：和CNAME类似，又叫做别名记录，可以将一个域名指向另一个域名，**与CNAME最大的区别是可以作用于根域名。考试中，如果出现选择Alias记录和CNAME记录的选择，95%的情况都要选择Alias记录。**
+5. Alias不能指向一个EC2实例。
+
+### 5.1.3. TTL（Time to Live）
+时间是DNS记录在DNS服务器或用户端上缓存保留的时间，在TTL时间到达之前，DNS记录将缓存在其他非权威DNS服务器或者用户主机上。
+
+### 5.1.4. Health Checks
+只能检查public资源，有以下三种方式进行健康检查：
+1. 通过监控一个端点，即一个应用，服务，或者AWS资源。
+2. 通过监控其它的Health Checks。
+3. 通过监控CloudWatch的一个Alarms，多用于访问私有资源。
+
 ## 5.2. CloudFront-内容分发服务
 1. CDN加速，原理就是在全球建立CDN服务器，即边缘站点（Edge Locations）和区域边缘缓存（Regional Edge Caches），依靠缓存加速网页访问速度。
 2. 内容源（Origin），CloudFront分发的内容来源：
@@ -636,6 +687,8 @@ NACL和安全组的区别：
 ## 5.4. 网络加速器
 ### 5.4.1. S3 Transfer Acceleration
 可以加速S3的传输速度，原理是用户上传文件到最近的边缘位置，边缘位置直接通过专门的网络传输到S3。
+
+[S3上传测速工具](https://s3-accelerate-speedtest.s3-accelerate.amazonaws.com/en/accelerate-speed-comparsion.html)
 
 ### 5.4.2. AWS Global Accelerator
 可以加速网络传输速度，原理和S3 Transfer Acceleration一样，直接在边缘位置和AWS服务直接有一条专门的网络，可以省去路由的时间。<br>
